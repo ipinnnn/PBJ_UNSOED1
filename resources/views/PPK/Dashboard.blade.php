@@ -23,8 +23,6 @@
 <body class="dash-body">
 @php
   // dummy frontend (nanti backend tinggal ganti)
-  $unitName = "Fakultas Teknik";
-
   // TOP SUMMARY (sesuai gambar)
   $summary = [
     ["label"=>"Total Arsip", "value"=>7, "accent"=>"navy", "icon"=>"bi-file-earmark-text"],
@@ -68,12 +66,6 @@
       </div>
     </div>
 
-    {{-- ✅ DIHAPUS: Unit Kerja + Fakultas di sidebar (karena admin) --}}
-    {{-- <div class="dash-unitbox">
-      <div class="dash-unit-label">Unit Kerja :</div>
-      <div class="dash-unit-name">{{ $unitName }}</div>
-    </div> --}}
-
     <nav class="dash-nav">
       <a class="dash-link active" href="{{ route('ppk.dashboard') }}">
         <span class="ic"><i class="bi bi-grid-fill"></i></span>
@@ -107,7 +99,7 @@
     <header class="dash-header">
       {{-- ✅ semi-bold hanya judul page --}}
       <h1>Dashboard Admin PPK</h1>
-      <p>Kelola arsip pengadaan barang dan jasa {{ $unitName }}</p>
+      <p>Kelola arsip pengadaan barang dan jasa Universitas Jenderal Soedirman</p>
     </header>
 
     {{-- SUMMARY CARDS (layout sesuai gambar: 3 atas, lalu 2 bawah) --}}

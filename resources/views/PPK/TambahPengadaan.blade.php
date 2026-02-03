@@ -31,7 +31,7 @@
 @endphp
 
 <div class="dash-wrap">
-  {{-- SIDEBAR (SAMA PERSIS DENGAN DASHBOARD UNIT) --}}
+  {{-- SIDEBAR (SAMA PERSIS DENGAN DASHBOARD UNIT) Pure PPK --}}
   <aside class="dash-sidebar">
     <div class="dash-brand">
       <div class="dash-logo">
@@ -39,7 +39,6 @@
       </div>
 
       <div class="dash-text">
-        {{-- ✅ semi-bold hanya judul web --}}
         <div class="dash-app">SIAPABAJA</div>
         <div class="dash-role">ADMIN (PPK)</div>
       </div>
@@ -62,7 +61,6 @@
       </a>
     </nav>
 
-    {{-- ===== TOMBOL KEMBALI & KELUAR ===== --}}
     <div class="dash-side-actions">
       <a class="dash-side-btn" href="{{ url('/ppk/dashboard') }}">
         <i class="bi bi-house-door"></i>
@@ -78,14 +76,11 @@
 
   {{-- MAIN --}}
   <main class="dash-main">
-    {{-- HEADER --}}
     <header class="dash-header">
-      {{-- ✅ semi-bold hanya judul page --}}
       <h1>Tambah Arsip Pengadaan Barang dan Jasa</h1>
       <p>Lengkapi formulir dibawah ini untuk menambahkan arsip PBJ</p>
     </header>
 
-    {{-- FORM: SETIAP SECTION PUNYA CARD SENDIRI --}}
     <form action="{{ url('/ppk/pengadaan/store') }}" method="POST" class="tp-form" enctype="multipart/form-data">
       @csrf
 
@@ -94,8 +89,7 @@
         <div style="padding:18px 18px 16px;">
           <div class="tp-section">
             <div class="tp-section-title">
-              <span class="tp-badge">A.</span>
-              <span>Informasi Umum</span>
+              <span>A. Informasi Umum</span>
             </div>
             <div class="tp-divider"></div>
 
@@ -103,8 +97,8 @@
               <div class="tp-field">
                 <label class="tp-label">Tahun</label>
                 <div class="tp-control">
-                  <select name="tahun" class="tp-select">
-                    <option value="">Tahun</option>
+                  <select name="tahun" class="tp-select" required>
+                    <option value="" selected disabled hidden>Tahun</option>
                     @foreach($tahunOptions as $t)
                       <option value="{{ $t }}">{{ $t }}</option>
                     @endforeach
@@ -116,8 +110,8 @@
               <div class="tp-field">
                 <label class="tp-label">Unit Kerja</label>
                 <div class="tp-control">
-                  <select name="unit_kerja" class="tp-select">
-                    <option value="">Fakultas</option>
+                  <select name="unit_kerja" class="tp-select" required>
+                    <option value="" selected disabled hidden>Fakultas</option>
                     @foreach($unitOptions as $u)
                       <option value="{{ $u }}">{{ $u }}</option>
                     @endforeach
@@ -139,8 +133,8 @@
               <div class="tp-field">
                 <label class="tp-label">Jenis Pengadaan</label>
                 <div class="tp-control">
-                  <select name="jenis_pengadaan" class="tp-select">
-                    <option value="">Pilih Jenis Pengadaan</option>
+                  <select name="jenis_pengadaan" class="tp-select" required>
+                    <option value="" selected disabled hidden>Pilih Jenis Pengadaan</option>
                     @foreach($jenisPengadaanOptions as $jp)
                       <option value="{{ $jp }}">{{ $jp }}</option>
                     @endforeach
@@ -152,8 +146,8 @@
               <div class="tp-field tp-full">
                 <label class="tp-label">Status Pekerjaan</label>
                 <div class="tp-control">
-                  <select name="status_pekerjaan" class="tp-select">
-                    <option value="">Pilih Status Pekerjaan</option>
+                  <select name="status_pekerjaan" class="tp-select" required>
+                    <option value="" selected disabled hidden>Pilih Status Pekerjaan</option>
                     @foreach($statusPekerjaanOptions as $sp)
                       <option value="{{ $sp }}">{{ $sp }}</option>
                     @endforeach
@@ -171,8 +165,7 @@
         <div style="padding:18px 18px 16px;">
           <div class="tp-section">
             <div class="tp-section-title">
-              <span class="tp-badge">B.</span>
-              <span>Status Akses Arsip</span>
+              <span>B. Status Akses Arsip</span>
             </div>
             <div class="tp-divider"></div>
 
@@ -204,8 +197,7 @@
         <div style="padding:18px 18px 16px;">
           <div class="tp-section">
             <div class="tp-section-title">
-              <span class="tp-badge">C.</span>
-              <span>Informasi Anggaran</span>
+              <span>C. Informasi Anggaran</span>
             </div>
             <div class="tp-divider"></div>
 
@@ -239,8 +231,7 @@
         <div style="padding:18px 18px 16px;">
           <div class="tp-section">
             <div class="tp-section-title">
-              <span class="tp-badge">D.</span>
-              <span>Dokumen Pengadaan</span>
+              <span>D. Dokumen Pengadaan</span>
             </div>
             <div class="tp-divider"></div>
 
@@ -249,30 +240,32 @@
             </div>
 
             <div class="tp-acc">
-              {{-- =========================
-                   TOTAL 37 SESI (0/1)
-                   1 sesi = 1 dokumen upload
-                   (desain tetap sama)
-              ========================== --}}
 
               {{-- 1 --}}
-              <div class="tp-acc-item" data-acc="open">
+              <div class="tp-acc-item">
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Kerangka Acuan Kerja atau KAK (0/1)
+                    Kerangka Acuan Kerja atau KAK
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_kak" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_kak[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -283,19 +276,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Harga Perkiraan Sendiri atau HPS (0/1)
+                    Harga Perkiraan Sendiri atau HPS
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_hps" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_hps[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -306,19 +306,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Spesifikasi Teknis (0/1)
+                    Spesifikasi Teknis
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_spesifikasi_teknis" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_spesifikasi_teknis[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -329,19 +336,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Rancangan Kontrak (0/1)
+                    Rancangan Kontrak
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_rancangan_kontrak" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_rancangan_kontrak[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -352,19 +366,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Lembar Data Kualifikasi (0/1)
+                    Lembar Data Kualifikasi
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_lembar_data_kualifikasi" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_lembar_data_kualifikasi[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -375,19 +396,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Lembar Data Pemilihan (0/1)
+                    Lembar Data Pemilihan
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_lembar_data_pemilihan" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_lembar_data_pemilihan[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -398,19 +426,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Daftar Kuantitas dan Harga (0/1)
+                    Daftar Kuantitas dan Harga
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_daftar_kuantitas_harga" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_daftar_kuantitas_harga[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -421,19 +456,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Jadwal dan Lokasi Pekerjaan (0/1)
+                    Jadwal dan Lokasi Pekerjaan
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_jadwal_lokasi_pekerjaan" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_jadwal_lokasi_pekerjaan[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -444,19 +486,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Gambar Rancangan Pekerjaan (0/1)
+                    Gambar Rancangan Pekerjaan
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_gambar_rancangan_pekerjaan" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_gambar_rancangan_pekerjaan[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -467,19 +516,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Dokumen Analisis Mengenai Dampak Lingkungan atau AMDAL (0/1)
+                    Dokumen Analisis Mengenai Dampak Lingkungan atau AMDAL
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_amdal" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_amdal[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -490,19 +546,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Dokumen Penawaran (0/1)
+                    Dokumen Penawaran
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_penawaran" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_penawaran[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -513,19 +576,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Surat Penawaran (0/1)
+                    Surat Penawaran
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="surat_penawaran" class="tp-file-hidden" />
+                      <input type="file" name="surat_penawaran[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -536,19 +606,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Sertifikat atau Lisensi Kemenkumham (0/1)
+                    Sertifikat atau Lisensi Kemenkumham
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_kemenkumham" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_kemenkumham[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -559,19 +636,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Berita Acara Pemberian Penjelasan (0/1)
+                    Berita Acara Pemberian Penjelasan
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="ba_pemberian_penjelasan" class="tp-file-hidden" />
+                      <input type="file" name="ba_pemberian_penjelasan[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -582,19 +666,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Berita Acara Pengumuman Negosiasi (0/1)
+                    Berita Acara Pengumuman Negosiasi
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="ba_pengumuman_negosiasi" class="tp-file-hidden" />
+                      <input type="file" name="ba_pengumuman_negosiasi[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -605,19 +696,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Berita Acara Sanggah dan Sanggah Banding (0/1)
+                    Berita Acara Sanggah dan Sanggah Banding
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="ba_sanggah_banding" class="tp-file-hidden" />
+                      <input type="file" name="ba_sanggah_banding[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -628,19 +726,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Berita Acara Penetapan (0/1)
+                    Berita Acara Penetapan
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="ba_penetapan" class="tp-file-hidden" />
+                      <input type="file" name="ba_penetapan[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -651,19 +756,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Laporan Hasil Pemilihan Penyedia (0/1)
+                    Laporan Hasil Pemilihan Penyedia
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="laporan_hasil_pemilihan" class="tp-file-hidden" />
+                      <input type="file" name="laporan_hasil_pemilihan[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -674,19 +786,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Surat Penunjukan Penyedia Barang Jasa atau SPPBJ (0/1)
+                    Surat Penunjukan Penyedia Barang Jasa atau SPPBJ
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_sppbj" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_sppbj[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -697,19 +816,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Surat Perjanjian Kemitraan (0/1)
+                    Surat Perjanjian Kemitraan
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="surat_perjanjian_kemitraan" class="tp-file-hidden" />
+                      <input type="file" name="surat_perjanjian_kemitraan[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -720,19 +846,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Surat Perjanjian Swakelola (0/1)
+                    Surat Perjanjian Swakelola
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="surat_perjanjian_swakelola" class="tp-file-hidden" />
+                      <input type="file" name="surat_perjanjian_swakelola[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -743,19 +876,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Surat Penugasan Tim Swakelola (0/1)
+                    Surat Penugasan Tim Swakelola
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="surat_penugasan_tim_swakelola" class="tp-file-hidden" />
+                      <input type="file" name="surat_penugasan_tim_swakelola[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -766,19 +906,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Nota Kesepahaman atau MoU (0/1)
+                    Nota Kesepahaman atau MoU
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_mou" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_mou[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -789,19 +936,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Dokumen Kontrak (0/1)
+                    Dokumen Kontrak
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_kontrak" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_kontrak[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -812,19 +966,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Ringkasan Kontrak (0/1)
+                    Ringkasan Kontrak
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="ringkasan_kontrak" class="tp-file-hidden" />
+                      <input type="file" name="ringkasan_kontrak[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -835,19 +996,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Surat Jaminan Pelaksanaan (0/1)
+                    Surat Jaminan Pelaksanaan
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="jaminan_pelaksanaan" class="tp-file-hidden" />
+                      <input type="file" name="jaminan_pelaksanaan[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -858,19 +1026,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Surat Jaminan Uang Muka (0/1)
+                    Surat Jaminan Uang Muka
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="jaminan_uang_muka" class="tp-file-hidden" />
+                      <input type="file" name="jaminan_uang_muka[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -881,19 +1056,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Surat Jaminan Pemeliharaan (0/1)
+                    Surat Jaminan Pemeliharaan
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="jaminan_pemeliharaan" class="tp-file-hidden" />
+                      <input type="file" name="jaminan_pemeliharaan[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -904,19 +1086,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Surat Tagihan (0/1)
+                    Surat Tagihan
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="surat_tagihan" class="tp-file-hidden" />
+                      <input type="file" name="surat_tagihan[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -927,19 +1116,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Surat Pesanan Elektronik atau E-Purchasing (0/1)
+                    Surat Pesanan Elektronik atau E-Purchasing
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="surat_pesanan_epurchasing" class="tp-file-hidden" />
+                      <input type="file" name="surat_pesanan_epurchasing[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -950,19 +1146,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Surat Perintah Mulai Kerja atau SPMK (0/1)
+                    Surat Perintah Mulai Kerja atau SPMK
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_spmk" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_spmk[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -973,19 +1176,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Surat Perintah Perjalanan Dinas atau SPPD (0/1)
+                    Surat Perintah Perjalanan Dinas atau SPPD
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="dokumen_sppd" class="tp-file-hidden" />
+                      <input type="file" name="dokumen_sppd[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -996,19 +1206,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Laporan Pelaksanaan Pekerjaan (0/1)
+                    Laporan Pelaksanaan Pekerjaan
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="laporan_pelaksanaan_pekerjaan" class="tp-file-hidden" />
+                      <input type="file" name="laporan_pelaksanaan_pekerjaan[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -1019,19 +1236,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Laporan Penyelesaian Pekerjaan (0/1)
+                    Laporan Penyelesaian Pekerjaan
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="laporan_penyelesaian_pekerjaan" class="tp-file-hidden" />
+                      <input type="file" name="laporan_penyelesaian_pekerjaan[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -1042,19 +1266,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Berita Acara Pembayaran atau BAP (0/1)
+                    Berita Acara Pembayaran atau BAP
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="bap" class="tp-file-hidden" />
+                      <input type="file" name="bap[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -1065,19 +1296,26 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Berita Acara Serah Terima Sementara atau BAST Sementara (0/1)
+                    Berita Acara Serah Terima Sementara atau BAST Sementara
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="bast_sementara" class="tp-file-hidden" />
+                      <input type="file" name="bast_sementara[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -1088,30 +1326,66 @@
                 <button type="button" class="tp-acc-head" aria-expanded="true">
                   <span class="tp-acc-left">
                     <i class="bi bi-file-earmark-text"></i>
-                    Berita Acara Serah Terima Final atau BAST Final (0/1)
+                    Berita Acara Serah Terima Final atau BAST Final
                   </span>
-                  <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
                 </button>
                 <div class="tp-acc-body">
                   <div class="tp-upload-row" style="margin-bottom:0;">
                     <label class="tp-dropzone">
-                      <input type="file" name="bast_akhir" class="tp-file-hidden" />
+                      <input type="file" name="bast_akhir[]" class="tp-file-hidden" multiple />
                       <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                       <div class="tp-drop-title">Upload Dokumen Anda</div>
                       <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                       <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
                     </label>
                   </div>
                 </div>
               </div>
 
-            </div>{{-- /tp-acc --}}
+              {{-- 38 --}}
+              <div class="tp-acc-item">
+                <button type="button" class="tp-acc-head" aria-expanded="true">
+                  <span class="tp-acc-left">
+                    <i class="bi bi-file-earmark-text"></i>
+                    Dokumen Pendukung Lainya
+                  </span>
+                  <span class="tp-acc-right">
+                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                  </span>
+                </button>
+                <div class="tp-acc-body">
+                  <div class="tp-upload-row" style="margin-bottom:0;">
+                    <label class="tp-dropzone">
+                      <input type="file" name="dokumen_pendukung_lainya[]" class="tp-file-hidden" multiple />
+                      <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
+                      <div class="tp-drop-title">Upload Dokumen Anda</div>
+                      <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
+                      <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
+                      <div class="tp-drop-btn">Pilih File</div>
+
+                      <div class="tp-preview-wrap" hidden>
+                        <div class="tp-preview-title">File terpilih</div>
+                        <div class="tp-preview-list"></div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
       </section>
 
-      {{-- ACTIONS --}}
       <div class="tp-actions">
         <a href="{{ url('/ppk/dashboard') }}" class="tp-btn tp-btn-ghost">
           <i class="bi bi-arrow-left"></i>
@@ -1128,24 +1402,14 @@
 </div>
 
 <style>
-  /* =============================
-     TAMBAH PENGADAAN (NO BOLD)
-     Aturan:
-     - Judul web (dash-app) & judul page (h1) = semi-bold (600)
-     - Selain itu = normal (400)
-  ============================= */
-
   .dash-body{
     font-size: 18px;
     line-height: 1.6;
     font-weight: 400;
   }
-
-  /* ✅ semi-bold hanya judul web + judul page */
   .dash-app{ font-weight: 600 !important; }
   .dash-header h1{ font-weight: 600 !important; }
 
-  /* ✅ semua teks lain normal */
   .dash-role,
   .dash-unit-label,
   .dash-unit-name,
@@ -1166,13 +1430,13 @@
   .tp-drop-title,
   .tp-drop-sub,
   .tp-drop-meta,
-  .tp-drop-btn{
+  .tp-drop-btn,
+  .tp-preview-title,
+  .tp-acc-count{
     font-weight: 400 !important;
   }
 
-  /* ===== tombol sidebar nempel bawah (layout) ===== */
   .dash-sidebar{ display:flex; flex-direction:column; }
-
   .dash-side-actions{
     margin-top:auto;
     padding-top: 14px;
@@ -1181,33 +1445,38 @@
     gap: 10px;
   }
 
-  /* ====== FORM LAYOUT ====== */
-  .tp-form{ font-family: inherit; }
-
+  /* =============================
+     JUDUL A/B/C/D: BG DIHILANGIN
+     - konten tetap sama, cuma tanpa background bar
+  ============================= */
   .tp-section-title{
     display:flex;
     align-items:center;
     gap:10px;
+    background: transparent;
     color: var(--navy2);
+    padding: 0;
+    border-radius: 0;
     font-size: 18px;
-    padding: 6px 6px 10px;
+    width: 100%;
+    box-sizing: border-box;
   }
-
   .tp-badge{
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     border-radius: 10px;
     display:grid;
     place-items:center;
-    background: #eef6f9;
+    background: transparent;
+    border: 1px solid rgba(24,79,97,.25);
     color: var(--navy2);
     font-size: 15px;
+    flex: 0 0 auto;
   }
-
   .tp-divider{
     height:1px;
     background: #eef3f6;
-    margin: 0 6px 14px;
+    margin: 12px 0 14px;
   }
 
   .tp-label{
@@ -1226,11 +1495,33 @@
     font-size: 16px;
     outline: none;
     background: #fff;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
   }
-  .tp-textarea{ resize: vertical; }
-
   .tp-control{ position:relative; }
   .tp-control .tp-select{ appearance:none; padding-right: 42px; }
+
+  /* =============================
+     DROPDOWN:
+     - value terpilih biru Unsoed
+     - placeholder saja yang abu
+  ============================= */
+  .tp-select{
+    color: var(--navy2) !important;
+    background-color: #fff !important;
+  }
+  .tp-select:focus{
+    color: var(--navy2) !important;
+  }
+  .tp-select:invalid{ color:#94a3b8 !important; }
+
+  .tp-select option:checked{
+    background: var(--navy2) !important;
+    color: #fff !important;
+  }
+  .tp-select option:hover{
+    background: rgba(24,79,97,.12) !important;
+  }
+
   .tp-icon{
     position:absolute;
     right: 14px;
@@ -1239,6 +1530,24 @@
     opacity: .55;
     pointer-events:none;
     font-size: 18px;
+    transition: opacity .18s ease, transform .18s ease, color .18s ease;
+    color: var(--navy2);
+  }
+
+  .tp-input:hover, .tp-select:hover{
+    border-color: rgba(24,79,97,.62);
+    box-shadow: 0 8px 14px rgba(2,8,23,.05);
+    transform: translateY(-1px);
+  }
+  .tp-input:focus, .tp-select:focus, .tp-textarea:focus{
+    border-color: var(--navy2);
+    box-shadow: 0 0 0 4px rgba(24,79,97,.14), 0 10px 18px rgba(2,8,23,.06);
+    transform: translateY(-1px);
+  }
+  .tp-control:focus-within .tp-icon{
+    opacity: .95;
+    color: var(--navy2);
+    transform: translateY(-50%) rotate(-180deg);
   }
 
   .tp-actions{
@@ -1259,12 +1568,17 @@
     border: 1px solid #e2e8f0;
     cursor:pointer;
     background:#fff;
+    transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+  }
+  .tp-btn:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 12px 20px rgba(2,8,23,.08);
   }
   .tp-btn i{ font-size: 18px; }
   .tp-btn-ghost{ background:#fff; color: var(--navy2); }
   .tp-btn-primary{ background: var(--yellow); border-color: transparent; color: #0f172a; }
 
-  /* RADIO CARDS */
+  /* RADIO */
   .tp-radio-wrap{ display:grid; gap: 12px; }
   .tp-radio-card{
     display:flex;
@@ -1278,6 +1592,12 @@
     user-select:none;
     color: var(--navy2);
     font-size: 16px;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+  }
+  .tp-radio-card:hover{
+    border-color: rgba(24,79,97,.55);
+    box-shadow: 0 10px 18px rgba(2,8,23,.07);
+    transform: translateY(-1px);
   }
   .tp-radio-card input{ display:none; }
   .tp-radio-dot{
@@ -1287,15 +1607,21 @@
     border: 2px solid var(--navy2);
     display:inline-block;
     position:relative;
+    flex: 0 0 auto;
   }
   .tp-radio-card.active{
     background: #dff1ff;
-    border-color: #b6dcff;
+    border-color: #9fd0ff;
+    box-shadow: 0 0 0 4px rgba(24,79,97,.10);
   }
   .tp-radio-card.active .tp-radio-dot::after{
     content:"";
     position:absolute;
-    inset: 4px;
+    left:50%;
+    top:50%;
+    width: 8px;
+    height: 8px;
+    transform: translate(-50%, -50%);
     border-radius:999px;
     background: var(--navy2);
   }
@@ -1305,8 +1631,13 @@
     border: 1px solid #e6eef2;
     border-radius: 14px;
     background:#fff;
-    box-shadow: 0 10px 20px rgba(2,8,23,.04);
+    box-shadow: 0 10px 18px rgba(2,8,23,.05);
     overflow:hidden;
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  }
+  .tp-acc-item:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 12px 20px rgba(2,8,23,.07);
   }
 
   .tp-acc-head{
@@ -1322,11 +1653,49 @@
     font-family: inherit;
     color: var(--navy2);
     font-size: 16px;
+    transition: background .18s ease, color .18s ease;
   }
 
-  .tp-acc-left{ display:flex; align-items:center; gap: 10px; }
+  /* ✅ text tipis jumlah file (di header sesi) */
+  .tp-acc-count{
+    font-size: 13px;
+    opacity: .78;
+    white-space: nowrap;
+    margin-right: 10px;
+    color: currentColor;
+  }
+
+  /* kalau sesi sudah ada file: header jadi hijau */
+  .tp-acc-item.has-file{
+    border-color: rgba(34,197,94,.65);
+    box-shadow: 0 14px 26px rgba(2,8,23,.08);
+  }
+  .tp-acc-item.has-file .tp-acc-head{
+    background: #22c55e;
+    color: #fff;
+  }
+  .tp-acc-item.has-file .tp-acc-left i{ color:#fff; opacity:.95; }
+  .tp-acc-item.has-file .tp-acc-ic{ color:#fff; opacity:.95; }
+
+  .tp-acc-left{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    min-width: 0;
+  }
   .tp-acc-left i{ font-size: 18px; }
-  .tp-acc-ic{ opacity:.85; transition: transform .15s ease; font-size: 18px; }
+
+  .tp-acc-right{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    flex: 0 0 auto;
+  }
+  .tp-acc-ic{
+    opacity:.9;
+    transition: transform .16s ease;
+    font-size: 18px;
+  }
 
   .tp-acc-body{
     border-top: 1px solid #eef3f6;
@@ -1335,12 +1704,8 @@
   }
 
   .tp-upload-row{ margin-bottom: 16px; }
-  .tp-upload-label{
-    color: var(--navy2);
-    font-size: 16px;
-    margin: 2px 0 10px;
-  }
 
+  /* DROPZONE */
   .tp-dropzone{
     display:grid;
     place-items:center;
@@ -1352,7 +1717,22 @@
     cursor:pointer;
     user-select:none;
     background:#fff;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
   }
+  .tp-dropzone:hover{
+    border-color: rgba(24,79,97,.70);
+    box-shadow: 0 0 0 4px rgba(24,79,97,.12), 0 12px 20px rgba(2,8,23,.06);
+    transform: translateY(-1px);
+  }
+
+  .tp-acc-item.has-file .tp-dropzone{
+    border-style: solid;
+    border-color: rgba(34,197,94,.90);
+    background: rgba(34,197,94,.05);
+    box-shadow: 0 0 0 4px rgba(34,197,94,.09), 0 12px 20px rgba(2,8,23,.05);
+    transform: translateY(-1px);
+  }
+
   .tp-file-hidden{ display:none; }
   .tp-drop-ic{
     width: 48px;
@@ -1364,6 +1744,7 @@
     color: var(--navy2);
     font-size: 24px;
     background:#fff;
+    transition: color .18s ease, background .18s ease, border-color .18s ease;
   }
   .tp-drop-title{ color: var(--navy2); font-size: 16px; }
   .tp-drop-sub{ color: var(--muted); font-size: 14px; }
@@ -1375,6 +1756,104 @@
     font-size: 16px;
     padding: 10px 18px;
     border-radius: 10px;
+    transition: transform .14s ease, box-shadow .14s ease, background .14s ease;
+  }
+  .tp-dropzone:hover .tp-drop-btn{
+    transform: translateY(-1px);
+    box-shadow: 0 10px 16px rgba(2,8,23,.08);
+  }
+
+  /* PREVIEW LIST */
+  .tp-preview-wrap{
+    width: 100%;
+    margin-top: 12px;
+    border-top: 1px solid rgba(2,8,23,.06);
+    padding-top: 12px;
+    text-align: left;
+  }
+  .tp-preview-title{
+    color: var(--navy2);
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  .tp-preview-list{
+    display:grid;
+    gap: 10px;
+  }
+  .tp-preview-item{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 10px;
+    border: 1px solid rgba(2,8,23,.08);
+    border-radius: 12px;
+    background: #fff;
+  }
+  .tp-preview-left{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .tp-preview-thumb{
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    border: 1px solid rgba(2,8,23,.08);
+    background: #f8fafc;
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+    flex: 0 0 auto;
+  }
+  .tp-preview-thumb img{
+    width:100%;
+    height:100%;
+    object-fit: cover;
+    display:block;
+  }
+  .tp-preview-info{ min-width:0; }
+  .tp-preview-name{
+    font-size: 14px;
+    color: #0f172a;
+    word-break: break-word;
+    line-height: 1.35;
+  }
+  .tp-preview-meta{
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
+  /* ✅ X CENTER FIX */
+  .tp-preview-remove{
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid rgba(2,8,23,.10);
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor:pointer;
+    flex: 0 0 auto;
+    padding: 0;
+    line-height: 1;
+    transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+    color: #0f172a;
+  }
+  .tp-preview-remove i{
+    font-size: 18px;
+    line-height: 1;
+    display:block;
+    transform: translateY(0.5px);
+  }
+  .tp-preview-remove:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 10px 16px rgba(2,8,23,.08);
+    border-color: rgba(24,79,97,.35);
   }
 
   @media(max-width:1100px){
@@ -1382,12 +1861,7 @@
     .tp-btn{ justify-content:center; }
   }
 
-  /* =========================================================
-     PATCH: samakan jarak kolom/card Tambah Pengadaan
-     dengan Edit Arsip (tp-card)
-     (hanya spacing/layout, tidak ubah konten)
-  ========================================================= */
-
+  /* PATCH spacing konsisten */
   .tp-cardbox{
     background:#fff !important;
     border-radius:14px !important;
@@ -1396,30 +1870,10 @@
     margin-bottom: 14px !important;
     overflow: hidden !important;
   }
-
-  .tp-cardbox > div{
-    padding: 18px 18px 18px !important;
-  }
-
-  .tp-grid{
-    padding: 0 !important;
-    gap: 14px 18px !important;
-  }
-
-  .tp-section-title{
-    padding: 0 0 10px !important;
-  }
-
-  .tp-divider{
-    margin: 0 0 14px !important;
-  }
-
-  .tp-acc{
-    padding: 0 !important;
-    display: grid !important;
-    gap: 14px !important;
-  }
-
+  .tp-cardbox > div{ padding: 18px 18px 18px !important; }
+  .tp-grid{ padding: 0 !important; gap: 14px 18px !important; }
+  .tp-divider{ margin-left:0 !important; margin-right:0 !important; }
+  .tp-acc{ padding: 0 !important; display: grid !important; gap: 14px !important; }
   .tp-help{
     margin: 0 0 12px !important;
     font-size: 15px;
@@ -1443,7 +1897,6 @@
     if(input) input.checked = true;
   });
 
-  // set active awal sesuai radio yang checked + accordion per sesi (independen)
   document.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('.tp-radio-wrap').forEach(wrap => {
       wrap.querySelectorAll('.tp-radio-card').forEach(c => c.classList.remove('active'));
@@ -1451,14 +1904,29 @@
       if(checked) checked.closest('.tp-radio-card').classList.add('active');
     });
 
-    // accordion: default CLOSED saat halaman dibuka
+    // ✅ Inject elemen "text tipis jumlah file" ke header sesi (tanpa ubah HTML statis)
+    document.querySelectorAll('.tp-acc-item').forEach(item => {
+      const right = item.querySelector('.tp-acc-right');
+      const chev = item.querySelector('.tp-acc-ic');
+      if(!right || !chev) return;
+
+      // kalau belum ada, tambahin span count
+      if(!right.querySelector('.tp-acc-count')){
+        const count = document.createElement('span');
+        count.className = 'tp-acc-count';
+        count.hidden = true;
+        count.textContent = '';
+        right.insertBefore(count, chev);
+      }
+    });
+
+    // accordion: default CLOSED
     document.querySelectorAll('.tp-acc-item').forEach(item => {
       const head = item.querySelector('.tp-acc-head');
       const body = item.querySelector('.tp-acc-body');
       const ic = item.querySelector('.tp-acc-ic');
       if(!head || !body) return;
 
-      // ✅ default closed (ketutup)
       body.style.display = 'none';
       if(ic) ic.style.transform = 'rotate(-90deg)';
       head.setAttribute('aria-expanded', 'false');
@@ -1466,22 +1934,197 @@
       head.addEventListener('click', () => {
         const isOpen = body.style.display !== 'none';
         body.style.display = isOpen ? 'none' : 'block';
-        head.classList.toggle('is-open', !isOpen);
         if(ic) ic.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
         head.setAttribute('aria-expanded', String(!isOpen));
       });
     });
 
-    // tombol "Pilih File" click = trigger input file
+    // "Pilih File" trigger input
     document.querySelectorAll('.tp-dropzone').forEach(zone => {
       const input = zone.querySelector('input[type="file"]');
       const btn = zone.querySelector('.tp-drop-btn');
+
+      const title = zone.querySelector('.tp-drop-title');
+      const sub = zone.querySelector('.tp-drop-sub');
+
+      if(title && !title.dataset.defaultText) title.dataset.defaultText = title.textContent.trim();
+      if(sub && !sub.dataset.defaultText) sub.dataset.defaultText = sub.textContent.trim();
+      if(btn && !btn.dataset.defaultText) btn.dataset.defaultText = btn.textContent.trim();
+
       if(input && btn){
         btn.addEventListener('click', (ev) => {
           ev.preventDefault();
           input.click();
         });
       }
+    });
+
+    const getIconHtml = (file) => {
+      const name = (file.name || '').toLowerCase();
+      const type = (file.type || '').toLowerCase();
+      if(type.startsWith('image/')) return '<i class="bi bi-image"></i>';
+      if(name.endsWith('.pdf')) return '<i class="bi bi-file-earmark-pdf"></i>';
+      if(name.endsWith('.doc') || name.endsWith('.docx')) return '<i class="bi bi-file-earmark-word"></i>';
+      if(name.endsWith('.xls') || name.endsWith('.xlsx') || name.endsWith('.csv')) return '<i class="bi bi-file-earmark-excel"></i>';
+      if(name.endsWith('.ppt') || name.endsWith('.pptx')) return '<i class="bi bi-file-earmark-ppt"></i>';
+      return '<i class="bi bi-file-earmark"></i>';
+    };
+
+    const formatSize = (bytes) => {
+      if(!bytes && bytes !== 0) return '';
+      if(bytes < 1024) return bytes + ' B';
+      const kb = bytes / 1024;
+      if(kb < 1024) return kb.toFixed(1) + ' KB';
+      const mb = kb / 1024;
+      return mb.toFixed(1) + ' MB';
+    };
+
+    // MULTI FILE APPEND + remove X
+    document.querySelectorAll('.tp-acc-item').forEach(item => {
+      const fileInput = item.querySelector('input[type="file"]');
+      const zone = item.querySelector('.tp-dropzone');
+      if(!fileInput || !zone) return;
+
+      const title = zone.querySelector('.tp-drop-title');
+      const sub = zone.querySelector('.tp-drop-sub');
+      const btn = zone.querySelector('.tp-drop-btn');
+
+      const previewWrap = zone.querySelector('.tp-preview-wrap');
+      const previewList = zone.querySelector('.tp-preview-list');
+
+      // ✅ elemen text tipis di header
+      const headCount = item.querySelector('.tp-acc-count');
+
+      let storedFiles = [];
+      const fileKey = (f) => `${f.name}__${f.size}__${f.lastModified}`;
+
+      const rebuildInputFiles = () => {
+        const dt = new DataTransfer();
+        storedFiles.forEach(f => dt.items.add(f));
+        fileInput.files = dt.files;
+      };
+
+      const clearPreview = () => {
+        if(previewList) previewList.innerHTML = '';
+        if(previewWrap) previewWrap.hidden = true;
+      };
+
+      const renderPreview = () => {
+        clearPreview();
+        if(!previewList) return;
+
+        storedFiles.forEach((file) => {
+          const row = document.createElement('div');
+          row.className = 'tp-preview-item';
+
+          const left = document.createElement('div');
+          left.className = 'tp-preview-left';
+
+          const thumb = document.createElement('div');
+          thumb.className = 'tp-preview-thumb';
+
+          const type = (file.type || '').toLowerCase();
+          if(type.startsWith('image/')){
+            const img = document.createElement('img');
+            img.alt = file.name || 'preview';
+            img.src = URL.createObjectURL(file);
+            img.onload = () => { try{ URL.revokeObjectURL(img.src); }catch(e){} };
+            thumb.appendChild(img);
+          } else {
+            thumb.innerHTML = getIconHtml(file);
+          }
+
+          const info = document.createElement('div');
+          info.className = 'tp-preview-info';
+
+          const name = document.createElement('div');
+          name.className = 'tp-preview-name';
+          name.textContent = file.name || 'Dokumen';
+
+          const meta = document.createElement('div');
+          meta.className = 'tp-preview-meta';
+          meta.textContent = formatSize(file.size);
+
+          info.appendChild(name);
+          info.appendChild(meta);
+
+          left.appendChild(thumb);
+          left.appendChild(info);
+
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'tp-preview-remove';
+          removeBtn.setAttribute('aria-label', 'Hapus file');
+          removeBtn.dataset.key = fileKey(file);
+          removeBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+
+          removeBtn.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            const k = removeBtn.dataset.key;
+            storedFiles = storedFiles.filter(f => fileKey(f) !== k);
+            rebuildInputFiles();
+            syncUI();
+          });
+
+          row.appendChild(left);
+          row.appendChild(removeBtn);
+
+          previewList.appendChild(row);
+        });
+
+        if(previewWrap) previewWrap.hidden = (storedFiles.length === 0);
+      };
+
+      const syncUI = () => {
+        const hasFile = storedFiles.length > 0;
+        item.classList.toggle('has-file', hasFile);
+
+        // ✅ text tipis di header sesi: "2 file sudah terupload"
+        if(headCount){
+          if(hasFile){
+            const n = storedFiles.length;
+            headCount.textContent = (n === 1) ? '1 file sudah terupload' : (n + ' file sudah terupload');
+            headCount.hidden = false;
+          } else {
+            headCount.textContent = '';
+            headCount.hidden = true;
+          }
+        }
+
+        if(hasFile){
+          if(title) title.textContent = storedFiles.length === 1 ? storedFiles[0].name : (storedFiles.length + ' file dipilih');
+          if(sub) sub.textContent = 'File dipilih';
+          if(btn) btn.textContent = 'Tambah File';
+          renderPreview();
+        } else {
+          if(title && title.dataset.defaultText) title.textContent = title.dataset.defaultText;
+          if(sub && sub.dataset.defaultText) sub.textContent = sub.dataset.defaultText;
+          if(btn && btn.dataset.defaultText) btn.textContent = btn.dataset.defaultText;
+          clearPreview();
+        }
+      };
+
+      fileInput.addEventListener('change', () => {
+        const picked = (fileInput.files && fileInput.files.length) ? Array.from(fileInput.files) : [];
+        if(picked.length){
+          const existing = new Set(storedFiles.map(fileKey));
+          picked.forEach(f => {
+            const k = fileKey(f);
+            if(!existing.has(k)){
+              storedFiles.push(f);
+              existing.add(k);
+            }
+          });
+          rebuildInputFiles();
+        }
+        fileInput.value = '';
+        syncUI();
+      });
+
+      storedFiles = [];
+      rebuildInputFiles();
+      syncUI();
     });
   });
 </script>

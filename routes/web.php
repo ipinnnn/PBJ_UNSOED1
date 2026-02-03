@@ -36,6 +36,7 @@ Route::prefix('unit')
         Route::get('/arsip/{id}/edit', [UnitController::class, 'arsipEdit'])
             ->name('arsip.edit');
 
+        // UPDATE arsip (redirect balik ke index harus di controller: return redirect()->route('unit.arsip'))
         Route::put('/arsip/{id}', [UnitController::class, 'arsipUpdate'])
             ->name('arsip.update');
 
@@ -67,6 +68,7 @@ Route::prefix('ppk')
         Route::get('/arsip/{id}/edit', [PpkController::class, 'arsipEdit'])
             ->name('arsip.edit');
 
+        // UPDATE arsip (redirect balik ke index harus di controller: return redirect()->route('ppk.arsip'))
         Route::put('/arsip/{id}', [PpkController::class, 'arsipUpdate'])
             ->name('arsip.update');
 

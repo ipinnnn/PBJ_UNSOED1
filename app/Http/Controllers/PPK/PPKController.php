@@ -4,6 +4,7 @@ namespace App\Http\Controllers\PPK;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PpkController extends Controller
 {
@@ -14,10 +15,13 @@ class PpkController extends Controller
         return view('PPK.Dashboard', compact('ppkName'));
     }
 
-    public function arsipIndex()
+    public function arsipIndex(Request $request)
     {
         $ppkName = "PPK Utama";
 
+        // =========================
+        // DUMMY DATA (tetap)
+        // =========================
         $arsipList = [
             [
                 'id' => 101,
@@ -25,6 +29,7 @@ class PpkController extends Controller
                 'tahun' => 2025,
                 'metode' => 'Tender Terbuka',
                 'status' => 'Pemilihan',
+                'nilai_kontrak' => 'Rp. 100.866.549.000,00',
             ],
             [
                 'id' => 102,
@@ -32,10 +37,38 @@ class PpkController extends Controller
                 'tahun' => 2024,
                 'metode' => 'Penunjukan Langsung',
                 'status' => 'Pelaksanaan',
+                'nilai_kontrak' => 'Rp. 50.000.549.000,00',
             ],
+            // Kalau mau test pagination beneran, boleh duplikat data ini banyakin
         ];
 
-        return view('PPK.ArsipPBJ', compact('ppkName', 'arsipList'));
+        // =========================
+        // PAGINATION (dari array)
+        // =========================
+        $perPage = 10; // jumlah data per halaman
+        $page = (int) $request->query('page', 1);
+        if ($page < 1) $page = 1;
+
+        $total = count($arsipList);
+        $offset = ($page - 1) * $perPage;
+
+        $items = array_slice($arsipList, $offset, $perPage);
+
+        $arsips = new LengthAwarePaginator(
+            $items,            // data untuk halaman ini
+            $total,            // total seluruh data
+            $perPage,          // per halaman
+            $page,             // halaman sekarang
+            [
+                'path' => $request->url(),      // path URL /ppk/arsip
+                'query' => $request->query(),   // penting: biar filter/search kebawa (kalau ada)
+            ]
+        );
+
+        // NOTE:
+        // - sekarang view akan menerima $arsips (paginator)
+        // - biar Blade pagination kamu jalan, pakai $arsips di view
+        return view('PPK.ArsipPBJ', compact('ppkName', 'arsips'));
     }
 
     public function arsipEdit($id)
@@ -63,7 +96,7 @@ class PpkController extends Controller
         ]);
 
         return redirect()
-            ->route('ppk.arsip.edit', $id)
+            ->route('ppk.arsip')
             ->with('success', 'Arsip berhasil diperbarui (dummy).');
     }
 

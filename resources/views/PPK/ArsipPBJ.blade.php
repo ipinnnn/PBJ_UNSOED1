@@ -23,58 +23,115 @@
 @php
   $unitName = "Fakultas Teknik";
 
-  // dummy data tabel arsip (nanti backend tinggal ganti)
-  $rows = [
-    [
-      "id" => 1,
-      "tahun"=>"2024",
-      "unit"=>"Fakultas Teknik",
-      "pekerjaan"=>"Pengadaan Laboratorium Komputer Terpadu | RUP-2026-001-FT",
-      "jenis_pbj"=>"Pengadaan Pekerjaan Konstruksi", // (tetap ada di data, tapi kolomnya dihapus)
-      "metode_pbj"=>"Pengadaan Langsung",           // (tetap ada di data, tapi kolom preview dihapus)
-      "nilai_kontrak"=>"Rp. 100.866.549.000,00",
-      "status_arsip"=>"Publik",
-      "status_pekerjaan"=>"Perencanaan",
-    ],
-    [
-      "id" => 2,
-      "tahun"=>"2024",
-      "unit"=>"Fakultas Ekonomi dan Bisnis",
-      "pekerjaan"=>"Pengadaan Laboratorium Komputer Terpadu | RUP-2026-002-FEB",
-      "jenis_pbj"=>"Pengadaan Pekerjaan Konstruksi",
-      "metode_pbj"=>"Pengadaan Langsung",
-      "nilai_kontrak"=>"Rp. 100.866.549.000,00",
-      "status_arsip"=>"Privat",
-      "status_pekerjaan"=>"Pemilihan",
-    ],
-    [
-      "id" => 3,
-      "tahun"=>"2024",
-      "unit"=>"Lembaga Penjaminan Mutu dan Pengembangan Pembelajaran (LPMPP)",
-      "pekerjaan"=>"Pengadaan Laboratorium Komputer Terpadu | RUP-2026-003-FAPET",
-      "jenis_pbj"=>"Pengadaan Pekerjaan Konstruksi",
-      "metode_pbj"=>"Pengadaan Langsung",
-      "nilai_kontrak"=>"Rp. 100.866.549.000,00",
-      "status_arsip"=>"Publik",
-      "status_pekerjaan"=>"Pelaksanaan",
-    ],
-    [
-      "id" => 4,
-      "tahun"=>"2024",
-      "unit"=>"Fakultas Hukum",
-      "pekerjaan"=>"Pengadaan Laboratorium Komputer Terpadu | RUP-2026-004-FH",
-      "jenis_pbj"=>"Pengadaan Pekerjaan Konstruksi",
-      "metode_pbj"=>"Pengadaan Langsung",
-      "nilai_kontrak"=>"Rp. 100.866.549.000,00",
-      "status_arsip"=>"Privat",
-      "status_pekerjaan"=>"Selesai",
-    ],
-  ];
+  // =========================
+  // DATA SOURCE:
+  // - Jika controller sudah kirim $arsips (paginator), pakai itu
+  // - Jika belum, fallback ke dummy lama (biar halaman tidak pecah)
+  // =========================
+  if (isset($arsips) && $arsips instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator) {
+    // map data dari controller (judul/metode/status) ke schema lama ($rows)
+    $rows = collect($arsips->items())->map(function($item) use ($unitName){
+      // pastikan array
+      $r = is_array($item) ? $item : (array) $item;
+
+      return [
+        "id" => $r["id"] ?? null,
+        "tahun" => (string)($r["tahun"] ?? ""),
+        "unit" => $r["unit"] ?? $unitName,
+        "pekerjaan" => $r["pekerjaan"] ?? ($r["judul"] ?? "-"),
+        "jenis_pbj" => $r["jenis_pbj"] ?? "Pengadaan Pekerjaan Konstruksi",
+        "metode_pbj" => $r["metode_pbj"] ?? ($r["metode"] ?? "-"),
+        "nilai_kontrak" => $r["nilai_kontrak"] ?? ($r["kontrak"] ?? ($r["nilai"] ?? "-")),
+        "status_arsip" => $r["status_arsip"] ?? "Publik",
+        "status_pekerjaan" => $r["status_pekerjaan"] ?? ($r["status"] ?? "-"),
+
+        // ✅ tambahan field untuk sinkron detail (aman, kalau belum ada tetap fallback nanti)
+        "idrup" => $r["idrup"] ?? ($r["id_rup"] ?? null),
+        "rekanan" => $r["rekanan"] ?? ($r["nama_rekanan"] ?? null),
+        "jenis" => $r["jenis"] ?? ($r["jenis_pengadaan"] ?? null),
+        "pagu" => $r["pagu"] ?? ($r["pagu_anggaran"] ?? null),
+        "hps" => $r["hps"] ?? null,
+      ];
+    })->values()->all();
+  } else {
+    // dummy data tabel arsip (nanti backend tinggal ganti)
+    $rows = [
+      [
+        "id" => 1,
+        "tahun"=>"2024",
+        "unit"=>"Fakultas Teknik",
+        "pekerjaan"=>"Pengadaan Laboratorium Komputer Terpadu | RUP-2026-001-FT",
+        "jenis_pbj"=>"Pengadaan Pekerjaan Konstruksi", // (tetap ada di data, tapi kolomnya dihapus)
+        "metode_pbj"=>"Pengadaan Langsung",           // (tetap ada di data, tapi kolom preview dihapus)
+        "nilai_kontrak"=>"Rp. 100.866.549.000,00",
+        "status_arsip"=>"Publik",
+        "status_pekerjaan"=>"Perencanaan",
+
+        // ✅ optional dummy untuk detail (biar kalau mau sync tinggal pakai)
+        "idrup" => "2026",
+        "rekanan" => "PT Jadi Kaya Bersama",
+        "jenis" => "Tender",
+        "pagu" => "Rp 500.000.000",
+        "hps" => "Rp 480.000.000",
+      ],
+      [
+        "id" => 2,
+        "tahun"=>"2024",
+        "unit"=>"Fakultas Ekonomi dan Bisnis",
+        "pekerjaan"=>"Pengadaan Laboratorium Komputer Terpadu | RUP-2026-002-FEB",
+        "jenis_pbj"=>"Pengadaan Pekerjaan Konstruksi",
+        "metode_pbj"=>"Pengadaan Langsung",
+        "nilai_kontrak"=>"Rp. 100.866.549.000,00",
+        "status_arsip"=>"Privat",
+        "status_pekerjaan"=>"Pemilihan",
+
+        "idrup" => "2026",
+        "rekanan" => "PT Jadi Kaya Bersama",
+        "jenis" => "Tender",
+        "pagu" => "Rp 500.000.000",
+        "hps" => "Rp 480.000.000",
+      ],
+      [
+        "id" => 3,
+        "tahun"=>"2024",
+        "unit"=>"Lembaga Penjaminan Mutu dan Pengembangan Pembelajaran (LPMPP)",
+        "pekerjaan"=>"Pengadaan Laboratorium Komputer Terpadu | RUP-2026-003-FAPET",
+        "jenis_pbj"=>"Pengadaan Pekerjaan Konstruksi",
+        "metode_pbj"=>"Pengadaan Langsung",
+        "nilai_kontrak"=>"Rp. 100.866.549.000,00",
+        "status_arsip"=>"Publik",
+        "status_pekerjaan"=>"Pelaksanaan",
+
+        "idrup" => "2026",
+        "rekanan" => "PT Jadi Kaya Bersama",
+        "jenis" => "Tender",
+        "pagu" => "Rp 500.000.000",
+        "hps" => "Rp 480.000.000",
+      ],
+      [
+        "id" => 4,
+        "tahun"=>"2024",
+        "unit"=>"Fakultas Hukum",
+        "pekerjaan"=>"Pengadaan Laboratorium Komputer Terpadu | RUP-2026-004-FH",
+        "jenis_pbj"=>"Pengadaan Pekerjaan Konstruksi",
+        "metode_pbj"=>"Pengadaan Langsung",
+        "nilai_kontrak"=>"Rp. 100.866.549.000,00",
+        "status_arsip"=>"Privat",
+        "status_pekerjaan"=>"Selesai",
+
+        "idrup" => "2026",
+        "rekanan" => "PT Jadi Kaya Bersama",
+        "jenis" => "Tender",
+        "pagu" => "Rp 500.000.000",
+        "hps" => "Rp 480.000.000",
+      ],
+    ];
+  }
 
   $years = array_values(array_unique(array_map(fn($x) => $x['tahun'], $rows)));
   rsort($years);
 
-  // ✅ UPDATE: unit options untuk filter (dummy)
+  // ✅ UPDATE: unit options untuk filter (dummy / current page)
   $unitOptions = array_values(array_unique(array_map(fn($x) => $x['unit'], $rows)));
   sort($unitOptions);
 @endphp
@@ -126,9 +183,19 @@
 
   {{-- MAIN --}}
   <main class="dash-main">
-    <header class="dash-header">
-      <h1>Arsip PBJ</h1>
-      <p>Kelola arsip pengadaan barang dan jasa {{ $unitName }}</p>
+    <header class="dash-header ap-header">
+      <div class="ap-header-left">
+        <h1>Arsip PBJ</h1>
+        <p>Kelola arsip pengadaan barang dan jasa {{ $unitName }}</p>
+      </div>
+
+      {{-- ✅ NEW: Tombol Cetak Arsip (kanan atas) --}}
+      <div class="ap-header-right">
+        <button type="button" id="apPrintBtn" class="ap-print-btn" title="Cetak Arsip">
+          <i class="bi bi-printer"></i>
+          Export Arsip
+        </button>
+      </div>
     </header>
 
     {{-- FILTER BAR --}}
@@ -277,17 +344,73 @@
               data-title="{{ $r['pekerjaan'] }}"
               data-unit="{{ $r['unit'] }}"
               data-tahun="{{ $r['tahun'] }}"
-              data-idrup="2026"
+              data-idrup="{{ $r['idrup'] ?? '2026' }}"
               data-status="{{ $r['status_pekerjaan'] }}"
-              data-rekanan="PT Jadi Kaya Bersama"
-              data-jenis="Tender"
-              data-pagu="Rp 500.000.000"
-              data-hps="Rp 480.000.000"
-              data-kontrak="Rp 475.000.000"
+              data-rekanan="{{ $r['rekanan'] ?? 'PT Jadi Kaya Bersama' }}"
+              data-jenis="{{ $r['jenis'] ?? 'Tender' }}"
+              data-pagu="{{ $r['pagu'] ?? 'Rp 500.000.000' }}"
+              data-hps="{{ $r['hps'] ?? 'Rp 480.000.000' }}"
+              data-kontrak="{{ $r['nilai_kontrak'] }}"
             >Detail</a>
           </div>
         </div>
       @endforeach
+
+      {{-- ✅ ADD: PAGINATION (di bawah tabel) --}}
+      @if(isset($arsips) && $arsips instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
+        <div class="ap-pagination-wrap">
+          <div class="ap-page-info">
+            Halaman {{ $arsips->currentPage() }} dari {{ $arsips->lastPage() }}
+            • Menampilkan {{ $arsips->count() }} dari {{ $arsips->total() }} data
+          </div>
+
+          <div class="ap-pagination">
+            {{-- Prev --}}
+            <a class="ap-page-btn {{ $arsips->onFirstPage() ? 'is-disabled' : '' }}"
+               href="{{ $arsips->onFirstPage() ? '#' : $arsips->previousPageUrl() }}"
+               aria-disabled="{{ $arsips->onFirstPage() ? 'true' : 'false' }}">
+              <i class="bi bi-chevron-left"></i>
+            </a>
+
+            @php
+              $current = $arsips->currentPage();
+              $last = $arsips->lastPage();
+              $start = max(1, $current - 2);
+              $end   = min($last, $current + 2);
+            @endphp
+
+            @if($start > 1)
+              <a class="ap-page-btn" href="{{ $arsips->url(1) }}">1</a>
+              @if($start > 2)
+                <span class="ap-page-btn is-ellipsis" aria-hidden="true">…</span>
+              @endif
+            @endif
+
+            @for($i = $start; $i <= $end; $i++)
+              <a class="ap-page-btn {{ $i === $current ? 'is-active' : '' }}"
+                 href="{{ $arsips->url($i) }}">
+                {{ $i }}
+              </a>
+            @endfor
+
+            @if($end < $last)
+              @if($end < $last - 1)
+                <span class="ap-page-btn is-ellipsis" aria-hidden="true">…</span>
+              @endif
+              <a class="ap-page-btn" href="{{ $arsips->url($last) }}">{{ $last }}</a>
+            @endif
+
+            {{-- Next --}}
+            <a class="ap-page-btn {{ $arsips->hasMorePages() ? '' : 'is-disabled' }}"
+               href="{{ $arsips->hasMorePages() ? $arsips->nextPageUrl() : '#' }}"
+               aria-disabled="{{ $arsips->hasMorePages() ? 'false' : 'true' }}">
+              <i class="bi bi-chevron-right"></i>
+            </a>
+          </div>
+        </div>
+      @endif
+      {{-- ✅ END PAGINATION --}}
+
     </section>
   </main>
 </div>
@@ -447,6 +570,58 @@
 
     /* garis pemisah row */
     --ap-row-divider: 2px;
+
+    /* ✅ Unsoed Yellow */
+    --unsoed-yellow: #f6c100;
+    --unsoed-yellow-dark: #d9aa00;
+  }
+
+  /* ✅ HEADER: bikin kanan-kiri (judul + tombol cetak) */
+  .page-arsip .ap-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .page-arsip .ap-header-left{ min-width: 0; }
+  .page-arsip .ap-header-right{
+    flex: 0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+  }
+
+  /* ✅ Tombol Cetak Arsip (kuning Unsoed) */
+  .page-arsip .ap-print-btn{
+    height: 42px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,.08);
+    background: var(--unsoed-yellow);
+    color: #1b1b1b;
+    font-size: 15px;
+    font-weight: 400;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+    box-shadow: 0 6px 16px rgba(0,0,0,.10);
+    transition: .15s ease;
+    user-select:none;
+    white-space: nowrap;
+    letter-spacing: 0.8px;
+  }
+  .page-arsip .ap-print-btn:hover{
+    background: var(--unsoed-yellow-dark);
+    transform: translateY(-1px);
+  }
+  .page-arsip .ap-print-btn:active{
+    transform: translateY(0);
+  }
+  .page-arsip .ap-print-btn i{
+    font-size: 16px;
+    line-height: 1;
+    display:block;
   }
 
   /* ===== FILTER BAR ===== */
@@ -661,11 +836,147 @@
     transform: translateY(0);
   }
 
+  /* =========================
+     ✅ PAGINATION (SCOPED)
+  ========================= */
+  .page-arsip .ap-pagination-wrap{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding: 14px 18px 16px;
+    border-top: 2px solid #eef3f6;
+  }
+
+  .page-arsip .ap-page-info{
+    font-size: 13.5px;
+    color:#64748b;
+    white-space: nowrap;
+  }
+
+  .page-arsip .ap-pagination{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .page-arsip .ap-page-btn{
+    min-width: 36px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 1px solid #e6eef2;
+    background:#fff;
+    color:#0f172a;
+    font-size: 13px;
+    font-weight: 600;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    text-decoration:none;
+    transition: .15s ease;
+    user-select:none;
+  }
+
+  .page-arsip .ap-page-btn:hover{
+    border-color:#cfe2ea;
+    background:#f8fbfd;
+  }
+
+  .page-arsip .ap-page-btn.is-active{
+    border-color: transparent;
+    background: var(--navy2);
+    color:#fff;
+  }
+
+  .page-arsip .ap-page-btn.is-disabled{
+    opacity: .55;
+    pointer-events:none;
+    background:#f8fafc;
+  }
+
+  .page-arsip .ap-page-btn.is-ellipsis{
+    pointer-events:none;
+    background: transparent;
+    border-color: transparent;
+    min-width: 24px;
+    padding: 0 4px;
+  }
+
   /* ✅ RESPONSIVE: kalau layar sempit, boleh turun baris biar gak rusak */
   @media (max-width: 1100px){
     .page-arsip .ap-filter-row{ flex-wrap: wrap; }
     .page-arsip .ap-search{ flex: 1 1 320px; min-width: 260px; }
     .page-arsip .ap-select{ flex: 1 1 220px; min-width: 220px; }
+    .page-arsip .ap-pagination-wrap{
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .page-arsip .ap-pagination{
+      justify-content:flex-start;
+    }
+
+    /* ✅ tombol cetak biar gak nabrak (turun di bawah header) */
+    .page-arsip .ap-header{
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .page-arsip .ap-header-right{
+      width:100%;
+      justify-content:flex-end;
+    }
+  }
+
+  /* =========================
+     ✅ PRINT STYLE
+     - sidebar/filter/tombol/tools/modal disembunyikan saat print
+  ========================= */
+  @media print{
+    /* sembunyikan elemen yang tidak perlu */
+    .dash-sidebar,
+    .ap-filter,
+    .ap-tools,
+    .ap-aksi,
+    .ap-head .ap-check,
+    .ap-row .ap-check,
+    .ap-header-right,
+    .dt-modal,
+    .ap-pagination-wrap{
+      display:none !important;
+    }
+
+    /* main jadi full */
+    .dash-main{
+      width: 100% !important;
+    }
+    .dash-wrap{
+      display:block !important;
+    }
+
+    /* rapihin spacing untuk kertas */
+    body{
+      background:#fff !important;
+    }
+    .dash-table{
+      box-shadow:none !important;
+    }
+
+    /* grid kolom saat print: hilangkan checkbox & aksi */
+    .page-arsip .ap-head,
+    .page-arsip .ap-row{
+      grid-template-columns:
+        86px
+        1.25fr
+        2.45fr
+        1.55fr
+        1.10fr
+        1.25fr;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      column-gap: 14px;
+    }
   }
 </style>
 
@@ -679,6 +990,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const refreshBtn = document.getElementById('apRefreshBtn');
   const deleteBtn  = document.getElementById('apDeleteBtn');
+
+  // ✅ NEW: Print button
+  const printBtn = document.getElementById('apPrintBtn');
 
   const getRows = () => Array.from(document.querySelectorAll('.ap-row'));
   const getVisibleRows = () => getRows().filter(r => r.style.display !== 'none');
@@ -830,6 +1144,21 @@ document.addEventListener('DOMContentLoaded', function () {
   syncSelectAllState();
   updateEditState();
   updateDeleteState();
+
+  // ✅ NEW: Cetak Arsip
+  if(printBtn){
+    printBtn.addEventListener('click', function(){
+      // pastikan modal ketutup kalau lagi kebuka
+      const modal = document.getElementById('dtModal');
+      if(modal && modal.classList.contains('is-open')){
+        modal.classList.remove('is-open');
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        modal.setAttribute('aria-hidden', 'true');
+      }
+      window.print();
+    });
+  }
 
   // MODAL DETAIL (tetap)
   const modal = document.getElementById('dtModal');

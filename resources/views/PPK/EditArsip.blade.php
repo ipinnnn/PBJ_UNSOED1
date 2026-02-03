@@ -21,34 +21,70 @@
 <body class="dash-body">
 @php
   // =========================
-  // PATCH: BIAR TIDAK ERROR DI HALAMAN CREATE (tambah)
+  // PATCH: BIAR TIDAK ERROR DI HALAMAN EDIT
   // =========================
   $arsip = $arsip ?? null;
 
+  // dummy frontend (nanti backend tinggal ganti)
   $unitName = "Fakultas Teknik";
 
+  // opsi dummy dropdown
   $tahunOptions = [2022, 2023, 2024, 2025, 2026];
   $unitOptions  = ["Fakultas Teknik", "Fakultas Hukum", "Fakultas Ekonomi dan Bisnis"];
   $jenisPengadaanOptions = ["Tender", "E-Katalog", "Pengadaan Langsung", "Seleksi", "Penunjukan Langsung"];
   $statusPekerjaanOptions = ["Perencanaan", "Pemilihan", "Pelaksanaan", "Selesai"];
 
-  // helper
+  // getter aman
+  $get = function($source, string $key){
+    if(!$source) return null;
+    if(is_object($source)) return $source->$key ?? null;
+    if(is_array($source)) return $source[$key] ?? null;
+    return null;
+  };
+
+  // old() prioritas
+  $val = function(string $oldKey, array $attrs = []) use ($arsip, $get){
+    $old = old($oldKey);
+    if($old !== null) return $old;
+    if(!$arsip) return null;
+    foreach($attrs as $a){
+      $v = $get($arsip, $a);
+      if($v !== null && $v !== '') return $v;
+    }
+    return null;
+  };
+
+  // status arsip
+  $statusArsipVal = $val('status_arsip', ['status_arsip']) ?? 'Publik';
+
+  // helper parse file existing (support: string, json array, array)
+  $parseFiles = function($raw){
+    if(!$raw) return [];
+    if(is_array($raw)) return array_values(array_filter($raw));
+    if(is_string($raw)){
+      $trim = trim($raw);
+      // coba json
+      if(strlen($trim) && ($trim[0] === '[' || $trim[0] === '{')){
+        $decoded = json_decode($trim, true);
+        if(is_array($decoded)){
+          if(array_keys($decoded) !== range(0, count($decoded)-1)){
+            $decoded = array_values($decoded);
+          }
+          return array_values(array_filter($decoded));
+        }
+      }
+      return [$raw];
+    }
+    return [];
+  };
+
   $baseName = function($path){
     if(!$path) return '';
     return basename($path);
   };
-  $hasFile = function($path){
-    return !empty($path);
-  };
-
-  // nilai status arsip
-  $statusArsipVal = old('status_arsip', optional($arsip)->status_arsip);
 
   /**
-   * ✅ FIX SESUAI MAUMU:
-   * 37 SESI, masing-masing 1 dokumen (0/1)
-   * (tanpa grup 0/10, 0/2, dst)
-   * Key harus sama dengan controller & tambah_pengadaan.
+   * DOKUMEN (SAMA PERSIS DENGAN TAMBAH PENGADAAN PPK)
    */
   $docSessions = [
     ['key'=>'dokumen_kak','label'=>'Kerangka Acuan Kerja atau KAK'],
@@ -60,7 +96,7 @@
     ['key'=>'dokumen_daftar_kuantitas_harga','label'=>'Daftar Kuantitas dan Harga'],
     ['key'=>'dokumen_jadwal_lokasi_pekerjaan','label'=>'Jadwal dan Lokasi Pekerjaan'],
     ['key'=>'dokumen_gambar_rancangan_pekerjaan','label'=>'Gambar Rancangan Pekerjaan'],
-    ['key'=>'dokumen_amdal','label'=>'Dokumen Analisis Mengenai Dampak Lingkungan (AMDAL)'],
+    ['key'=>'dokumen_amdal','label'=>'Dokumen Analisis Mengenai Dampak Lingkungan atau AMDAL'],
     ['key'=>'dokumen_penawaran','label'=>'Dokumen Penawaran'],
     ['key'=>'surat_penawaran','label'=>'Surat Penawaran'],
     ['key'=>'dokumen_kemenkumham','label'=>'Sertifikat atau Lisensi Kemenkumham'],
@@ -88,11 +124,12 @@
     ['key'=>'bap','label'=>'Berita Acara Pembayaran atau BAP'],
     ['key'=>'bast_sementara','label'=>'Berita Acara Serah Terima Sementara atau BAST Sementara'],
     ['key'=>'bast_akhir','label'=>'Berita Acara Serah Terima Final atau BAST Final'],
+    ['key'=>'dokumen_pendukung_lainya','label'=>'Dokumen Pendukung Lainya'],
   ];
 @endphp
 
 <div class="dash-wrap">
-  {{-- SIDEBAR (SAMA PERSIS DENGAN TAMBAH PENGADAAN) --}}
+  {{-- SIDEBAR (SAMA PERSIS DENGAN TAMBAH PENGADAAN PPK) --}}
   <aside class="dash-sidebar">
     <div class="dash-brand">
       <div class="dash-logo">
@@ -100,7 +137,6 @@
       </div>
 
       <div class="dash-text">
-        {{-- ✅ semi-bold hanya judul web --}}
         <div class="dash-app">SIAPABAJA</div>
         <div class="dash-role">ADMIN (PPK)</div>
       </div>
@@ -123,10 +159,9 @@
       </a>
     </nav>
 
-    {{-- ===== TOMBOL KEMBALI & KELUAR (KONSISTEN DENGAN TAMBAH PENGADAAN) ===== --}}
     <div class="dash-side-actions">
-      <a class="dash-side-btn" href="{{ url('/ppk/arsip') }}">
-        <i class="bi bi-arrow-left"></i>
+      <a class="dash-side-btn" href="{{ url('/ppk/dashboard') }}">
+        <i class="bi bi-house-door"></i>
         Kembali
       </a>
 
@@ -139,35 +174,32 @@
 
   {{-- MAIN --}}
   <main class="dash-main">
-
-    {{-- ✅ Tombol kembali di atas kiri page edit --}}
-    <a href="{{ url('/ppk/arsip') }}" class="tp-btn tp-btn-ghost tp-topback">
-      <i class="bi bi-arrow-left"></i>
-      Kembali
-    </a>
-
-    {{-- HEADER --}}
     <header class="dash-header">
-      {{-- ✅ semi-bold hanya judul page --}}
+      {{-- ✅ tombol kembali DI ATAS PAGE (header) --}}
+      <div class="tp-header-actions">
+        {{-- ✅ FIT SESUAI TEKS (bukan tp-btn-same) --}}
+        <a href="{{ url('/ppk/arsip') }}" class="tp-btn tp-btn-ghost tp-btn-fit">
+          <i class="bi bi-arrow-left"></i>
+          Kembali
+        </a>
+      </div>
+
       <h1>Edit Arsip Pengadaan Barang dan Jasa</h1>
       <p>Perbarui arsip PBJ</p>
     </header>
 
-    {{-- FORM --}}
-    <form action="{{ $arsip ? route('ppk.arsip.update', $arsip->id) : route('ppk.pengadaan.store') }}"
-          method="POST" enctype="multipart/form-data" class="tp-form">
+    <form id="editForm"
+          action="{{ $arsip ? route('ppk.arsip.update', $get($arsip,'id')) : url('/ppk/pengadaan/store') }}"
+          method="POST" class="tp-form" enctype="multipart/form-data">
       @csrf
-      @if($arsip)
-        @method('PUT')
-      @endif
+      @if($arsip) @method('PUT') @endif
 
       {{-- A. Informasi Umum --}}
       <section class="dash-table tp-cardbox" style="border-radius:14px; overflow:visible; margin-bottom:14px;">
         <div style="padding:18px 18px 16px;">
           <div class="tp-section">
             <div class="tp-section-title">
-              <span class="tp-badge">A.</span>
-              <span>Informasi Umum</span>
+              <span>A. Informasi Umum</span>
             </div>
             <div class="tp-divider"></div>
 
@@ -175,10 +207,10 @@
               <div class="tp-field">
                 <label class="tp-label">Tahun</label>
                 <div class="tp-control">
-                  <select name="tahun" class="tp-select">
-                    <option value="">Tahun</option>
+                  <select name="tahun" class="tp-select" required>
+                    <option value="" {{ $val('tahun',['tahun']) ? '' : 'selected' }} disabled hidden>Tahun</option>
                     @foreach($tahunOptions as $t)
-                      <option value="{{ $t }}" @selected(old('tahun', optional($arsip)->tahun) == $t)>{{ $t }}</option>
+                      <option value="{{ $t }}" @selected($val('tahun',['tahun']) == $t)>{{ $t }}</option>
                     @endforeach
                   </select>
                   <i class="bi bi-chevron-down tp-icon"></i>
@@ -188,10 +220,10 @@
               <div class="tp-field">
                 <label class="tp-label">Unit Kerja</label>
                 <div class="tp-control">
-                  <select name="unit_kerja" class="tp-select">
-                    <option value="">Fakultas</option>
+                  <select name="unit_kerja" class="tp-select" required>
+                    <option value="" {{ $val('unit_kerja',['unit_kerja','unit']) ? '' : 'selected' }} disabled hidden>Fakultas</option>
                     @foreach($unitOptions as $u)
-                      <option value="{{ $u }}" @selected(old('unit_kerja', optional($arsip)->unit_kerja) == $u)>{{ $u }}</option>
+                      <option value="{{ $u }}" @selected($val('unit_kerja',['unit_kerja','unit']) == $u)>{{ $u }}</option>
                     @endforeach
                   </select>
                   <i class="bi bi-chevron-down tp-icon"></i>
@@ -201,24 +233,24 @@
               <div class="tp-field tp-full">
                 <label class="tp-label">Nama Pekerjaan</label>
                 <input type="text" name="nama_pekerjaan" class="tp-input"
-                       value="{{ old('nama_pekerjaan', optional($arsip)->nama_pekerjaan) }}"
+                       value="{{ $val('nama_pekerjaan',['nama_pekerjaan','pekerjaan','judul']) }}"
                        placeholder="Nama Pekerjaan" />
               </div>
 
               <div class="tp-field">
                 <label class="tp-label">ID RUP</label>
                 <input type="text" name="id_rup" class="tp-input"
-                       value="{{ old('id_rup', optional($arsip)->id_rup) }}"
+                       value="{{ $val('id_rup',['id_rup','idrup','id_rup_pengadaan']) }}"
                        placeholder="RUP-xxxx-xxxx-xxx-xx" />
               </div>
 
               <div class="tp-field">
                 <label class="tp-label">Jenis Pengadaan</label>
                 <div class="tp-control">
-                  <select name="jenis_pengadaan" class="tp-select">
-                    <option value="">Pilih Jenis Pengadaan</option>
+                  <select name="jenis_pengadaan" class="tp-select" required>
+                    <option value="" {{ $val('jenis_pengadaan',['jenis_pengadaan','jenis']) ? '' : 'selected' }} disabled hidden>Pilih Jenis Pengadaan</option>
                     @foreach($jenisPengadaanOptions as $jp)
-                      <option value="{{ $jp }}" @selected(old('jenis_pengadaan', optional($arsip)->jenis_pengadaan) == $jp)>{{ $jp }}</option>
+                      <option value="{{ $jp }}" @selected($val('jenis_pengadaan',['jenis_pengadaan','jenis']) == $jp)>{{ $jp }}</option>
                     @endforeach
                   </select>
                   <i class="bi bi-chevron-down tp-icon"></i>
@@ -228,17 +260,16 @@
               <div class="tp-field tp-full">
                 <label class="tp-label">Status Pekerjaan</label>
                 <div class="tp-control">
-                  <select name="status_pekerjaan" class="tp-select">
-                    <option value="">Pilih Status Pekerjaan</option>
+                  <select name="status_pekerjaan" class="tp-select" required>
+                    <option value="" {{ $val('status_pekerjaan',['status_pekerjaan','status']) ? '' : 'selected' }} disabled hidden>Pilih Status Pekerjaan</option>
                     @foreach($statusPekerjaanOptions as $sp)
-                      <option value="{{ $sp }}" @selected(old('status_pekerjaan', optional($arsip)->status_pekerjaan) == $sp)>{{ $sp }}</option>
+                      <option value="{{ $sp }}" @selected($val('status_pekerjaan',['status_pekerjaan','status']) == $sp)>{{ $sp }}</option>
                     @endforeach
                   </select>
                   <i class="bi bi-chevron-down tp-icon"></i>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </section>
@@ -248,8 +279,7 @@
         <div style="padding:18px 18px 16px;">
           <div class="tp-section">
             <div class="tp-section-title">
-              <span class="tp-badge">B.</span>
-              <span>Status Akses Arsip</span>
+              <span>B. Status Akses Arsip</span>
             </div>
             <div class="tp-divider"></div>
 
@@ -258,22 +288,20 @@
                 <label class="tp-label">Status Arsip</label>
 
                 <div class="tp-radio-wrap">
-                  <label class="tp-radio-card {{ $statusArsipVal=='Publik' ? 'active' : '' }}">
-                    <input type="radio" name="status_arsip" value="Publik" {{ $statusArsipVal=='Publik' ? 'checked' : '' }}>
+                  <label class="tp-radio-card {{ $statusArsipVal==='Publik' ? 'active' : '' }}">
+                    <input type="radio" name="status_arsip" value="Publik" {{ $statusArsipVal==='Publik' ? 'checked' : '' }}>
                     <span class="tp-radio-dot"></span>
                     <span class="tp-radio-text">Publik</span>
                   </label>
 
-                  <label class="tp-radio-card {{ $statusArsipVal=='Privat' ? 'active' : '' }}">
-                    <input type="radio" name="status_arsip" value="Privat" {{ $statusArsipVal=='Privat' ? 'checked' : '' }}>
+                  <label class="tp-radio-card {{ $statusArsipVal==='Privat' ? 'active' : '' }}">
+                    <input type="radio" name="status_arsip" value="Privat" {{ $statusArsipVal==='Privat' ? 'checked' : '' }}>
                     <span class="tp-radio-dot"></span>
                     <span class="tp-radio-text">Privat</span>
                   </label>
                 </div>
-
               </div>
             </div>
-
           </div>
         </div>
       </section>
@@ -283,8 +311,7 @@
         <div style="padding:18px 18px 16px;">
           <div class="tp-section">
             <div class="tp-section-title">
-              <span class="tp-badge">C.</span>
-              <span>Informasi Anggaran</span>
+              <span>C. Informasi Anggaran</span>
             </div>
             <div class="tp-divider"></div>
 
@@ -292,43 +319,41 @@
               <div class="tp-field">
                 <label class="tp-label">Pagu Anggaran (Rp)</label>
                 <input type="text" name="pagu_anggaran" class="tp-input"
-                       value="{{ old('pagu_anggaran', optional($arsip)->pagu_anggaran) }}"
+                       value="{{ $val('pagu_anggaran',['pagu_anggaran','pagu']) }}"
                        placeholder="Rp" />
               </div>
 
               <div class="tp-field">
                 <label class="tp-label">HPS (Rp)</label>
                 <input type="text" name="hps" class="tp-input"
-                       value="{{ old('hps', optional($arsip)->hps) }}"
+                       value="{{ $val('hps',['hps']) }}"
                        placeholder="Rp" />
               </div>
 
               <div class="tp-field">
                 <label class="tp-label">Nilai Kontrak (Rp)</label>
                 <input type="text" name="nilai_kontrak" class="tp-input"
-                       value="{{ old('nilai_kontrak', optional($arsip)->nilai_kontrak) }}"
+                       value="{{ $val('nilai_kontrak',['nilai_kontrak','kontrak','nilai']) }}"
                        placeholder="Rp" />
               </div>
 
               <div class="tp-field">
                 <label class="tp-label">Nama Rekanan</label>
                 <input type="text" name="nama_rekanan" class="tp-input"
-                       value="{{ old('nama_rekanan', optional($arsip)->nama_rekanan) }}"
+                       value="{{ $val('nama_rekanan',['nama_rekanan','rekanan']) }}"
                        placeholder="Nama Rekanan" />
               </div>
             </div>
-
           </div>
         </div>
       </section>
 
-      {{-- D. Dokumen Pengadaan (✅ 37 SESI, masing-masing (0/1)) --}}
+      {{-- D. Dokumen Pengadaan --}}
       <section class="dash-table tp-cardbox" style="border-radius:14px; overflow:visible; margin-bottom:14px;">
         <div style="padding:18px 18px 16px;">
           <div class="tp-section">
             <div class="tp-section-title">
-              <span class="tp-badge">D.</span>
-              <span>Dokumen Pengadaan</span>
+              <span>D. Dokumen Pengadaan</span>
             </div>
             <div class="tp-divider"></div>
 
@@ -337,43 +362,69 @@
             </div>
 
             <div class="tp-acc">
-              @foreach($docSessions as $idx => $s)
+              @foreach($docSessions as $s)
                 @php
-                  $key  = $s['key'];
-                  $path = $arsip ? ($arsip->$key ?? null) : null;
-                  $has  = $hasFile($path);
-                  $filled = $has ? 1 : 0;
+                  $key = $s['key'];
+                  $existingRaw = $arsip ? $get($arsip, $key) : null;
+                  $existingFiles = $parseFiles($existingRaw);
+                  $existingCount = count($existingFiles);
                 @endphp
 
-                <div class="tp-acc-item">
-                  <button type="button" class="tp-acc-head" aria-expanded="false">
+                <div class="tp-acc-item" data-existing-count="{{ $existingCount }}">
+                  <button type="button" class="tp-acc-head" aria-expanded="true">
                     <span class="tp-acc-left">
                       <i class="bi bi-file-earmark-text"></i>
-                      {{ $s['label'] }} ( <span class="js-item-filled">{{ $filled }}</span> / 1 )
+                      {{ $s['label'] }}
                     </span>
-                    <i class="bi bi-chevron-down tp-acc-ic"></i>
+                    <span class="tp-acc-right">
+                      <i class="bi bi-chevron-down tp-acc-ic"></i>
+                    </span>
                   </button>
 
                   <div class="tp-acc-body">
-                    <div class="tp-upload-row" data-has="{{ $has ? '1' : '0' }}">
-                      <input type="hidden" name="{{ $key }}_delete" value="0" class="tp-del-flag">
+                    <div class="tp-upload-row" style="margin-bottom:0;">
 
-                      {{-- SUDAH ADA FILE --}}
-                      <div class="tp-file-exist" style="{{ $has ? '' : 'display:none;' }}">
-                        <div class="tp-filebox">
-                          <span class="tp-filebox-name">{{ $baseName($path) }}</span>
-                          <button type="button" class="tp-filebox-x tp-existing-x" title="Hapus" aria-label="Hapus">×</button>
-                        </div>
-                      </div>
+                      {{-- list path existing yang dihapus --}}
+                      <div class="js-remove-wrap" hidden></div>
 
-                      {{-- DROPZONE --}}
-                      <label class="tp-dropzone" style="{{ $has ? 'display:none;' : '' }}">
-                        <input type="file" name="{{ $key }}" class="tp-file-hidden" />
+                      <label class="tp-dropzone">
+                        <input
+                          type="file"
+                          name="{{ $key }}[]"
+                          class="tp-file-hidden"
+                          multiple
+                          data-key="{{ $key }}"
+                        />
+
                         <div class="tp-drop-ic"><i class="bi bi-upload"></i></div>
                         <div class="tp-drop-title">Upload Dokumen Anda</div>
                         <div class="tp-drop-sub">Klik untuk upload atau drag & drop</div>
-                        <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</div>
+                        <div class="tp-drop-meta">Format : PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 10MB)</div>
                         <div class="tp-drop-btn">Pilih File</div>
+
+                        <div class="tp-preview-wrap" {{ $existingCount ? '' : 'hidden' }}>
+                          <div class="tp-preview-title">File terpilih</div>
+
+                          <div class="tp-preview-list">
+                            @foreach($existingFiles as $path)
+                              <div class="tp-preview-item tp-existing" data-existing="1" data-path="{{ $path }}">
+                                <div class="tp-preview-left">
+                                  <div class="tp-preview-thumb">
+                                    <i class="bi bi-file-earmark"></i>
+                                  </div>
+                                  <div class="tp-preview-info">
+                                    <div class="tp-preview-name">{{ $baseName($path) }}</div>
+                                    <div class="tp-preview-meta">File tersimpan</div>
+                                  </div>
+                                </div>
+                                <button type="button" class="tp-preview-remove js-remove-existing" aria-label="Hapus file">
+                                  <i class="bi bi-x-lg"></i>
+                                </button>
+                              </div>
+                            @endforeach
+                          </div>
+                        </div>
+
                       </label>
                     </div>
                   </div>
@@ -385,14 +436,14 @@
         </div>
       </section>
 
-      {{-- ACTIONS --}}
-      <div class="tp-actions">
-        <button type="reset" class="tp-btn tp-btn-danger-ghost">
+      {{-- ✅ BAWAH: kiri Hapus Perubahan, kanan Simpan Perubahan --}}
+      <div class="tp-actions tp-actions-split">
+        <button type="button" class="tp-btn tp-btn-danger tp-btn-same" id="btnResetChanges">
           <i class="bi bi-x-circle"></i>
           Hapus Perubahan
         </button>
 
-        <button type="submit" class="tp-btn tp-btn-primary">
+        <button type="submit" class="tp-btn tp-btn-primary tp-btn-same">
           <i class="bi bi-check2-circle"></i>
           Simpan Perubahan
         </button>
@@ -402,24 +453,14 @@
 </div>
 
 <style>
-  /* =============================
-     EDIT ARSIP (NO BOLD)
-     Aturan:
-     - Judul web (dash-app) & judul page (dash-header h1) = semi-bold (600)
-     - Selain itu = normal (400)
-  ============================= */
-
   .dash-body{
     font-size: 18px;
     line-height: 1.6;
     font-weight: 400;
   }
-
-  /* ✅ semi-bold hanya judul web + judul page */
   .dash-app{ font-weight: 600 !important; }
   .dash-header h1{ font-weight: 600 !important; }
 
-  /* ✅ semua teks lain normal */
   .dash-role,
   .dash-unit-label,
   .dash-unit-name,
@@ -437,17 +478,16 @@
   .tp-radio-text,
   .tp-acc-head,
   .tp-upload-label,
-  .tp-filebox-name,
   .tp-drop-title,
   .tp-drop-sub,
   .tp-drop-meta,
-  .tp-drop-btn{
+  .tp-drop-btn,
+  .tp-preview-title,
+  .tp-acc-count{
     font-weight: 400 !important;
   }
 
-  /* ===== tombol sidebar nempel bawah (layout) ===== */
   .dash-sidebar{ display:flex; flex-direction:column; }
-
   .dash-side-actions{
     margin-top:auto;
     padding-top: 14px;
@@ -456,61 +496,46 @@
     gap: 10px;
   }
 
-  /* ====== tombol kembali atas kiri ====== */
-  .tp-topback{
-    width: fit-content;
-    margin: 6px 0 10px;
-  }
-
-  /* ====== tombol ====== */
-  .tp-btn{
-    display:inline-flex;
+  /* ✅ tombol kembali DI ATAS PAGE (header) */
+  .tp-header-actions{
+    display:flex;
     align-items:center;
-    gap:10px;
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 16px;
-    text-decoration:none;
-    border: 1px solid #e2e8f0;
-    cursor:pointer;
-    background:#fff;
-  }
-  .tp-btn i{ font-size: 18px; }
-  .tp-btn-ghost{ background:#fff; color: var(--navy2); }
-  .tp-btn-primary{ background: var(--yellow); border-color: transparent; color: #0f172a; }
-  .tp-btn-danger-ghost{
-    border: 1px solid #f1b4b4;
-    color:#9b1c1c;
-    background:#fff;
+    justify-content:flex-start;
+    margin-bottom: 5px;
   }
 
-  /* ====== SECTION ====== */
+  /* =============================
+     JUDUL A/B/C/D: BG DIHILANGIN
+  ============================= */
   .tp-section-title{
     display:flex;
     align-items:center;
     gap:10px;
+    background: transparent;
     color: var(--navy2);
+    padding: 0;
+    border-radius: 0;
     font-size: 18px;
-    padding: 6px 6px 10px;
+    width: 100%;
+    box-sizing: border-box;
   }
   .tp-badge{
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     border-radius: 10px;
     display:grid;
     place-items:center;
-    background: #eef6f9;
+    background: transparent;
+    border: 1px solid rgba(24,79,97,.25);
     color: var(--navy2);
     font-size: 15px;
+    flex: 0 0 auto;
   }
   .tp-divider{
     height:1px;
     background: #eef3f6;
-    margin: 0 6px 14px;
+    margin: 12px 0 14px;
   }
-
-  /* ====== FORM CONTROL ====== */
-  .tp-form{ font-family: inherit; }
 
   .tp-label{
     display:block;
@@ -528,10 +553,25 @@
     font-size: 16px;
     outline: none;
     background: #fff;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
   }
-
   .tp-control{ position:relative; }
   .tp-control .tp-select{ appearance:none; padding-right: 42px; }
+
+  /* DROPDOWN */
+  .tp-select{
+    color: var(--navy2) !important;
+    background-color: #fff !important;
+  }
+  .tp-select:focus{ color: var(--navy2) !important; }
+  .tp-select:invalid{ color:#94a3b8 !important; }
+
+  .tp-select option:checked{
+    background: var(--navy2) !important;
+    color: #fff !important;
+  }
+  .tp-select option:hover{ background: rgba(24,79,97,.12) !important; }
+
   .tp-icon{
     position:absolute;
     right: 14px;
@@ -540,18 +580,88 @@
     opacity: .55;
     pointer-events:none;
     font-size: 18px;
+    transition: opacity .18s ease, transform .18s ease, color .18s ease;
+    color: var(--navy2);
   }
 
-  /* ===== ACTIONS ===== */
+  .tp-input:hover, .tp-select:hover{
+    border-color: rgba(24,79,97,.62);
+    box-shadow: 0 8px 14px rgba(2,8,23,.05);
+    transform: translateY(-1px);
+  }
+  .tp-input:focus, .tp-select:focus, .tp-textarea:focus{
+    border-color: var(--navy2);
+    box-shadow: 0 0 0 4px rgba(24,79,97,.14), 0 10px 18px rgba(2,8,23,.06);
+    transform: translateY(-1px);
+  }
+  .tp-control:focus-within .tp-icon{
+    opacity: .95;
+    color: var(--navy2);
+    transform: translateY(-50%) rotate(-180deg);
+  }
+
+  /* ✅ tombol konsisten ukuran */
+  .tp-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 16px;
+    text-decoration:none;
+    border: 1px solid #e2e8f0;
+    cursor:pointer;
+    background:#fff;
+    transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+    white-space: nowrap;
+  }
+  .tp-btn:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 12px 20px rgba(2,8,23,.08);
+  }
+  .tp-btn i{ font-size: 18px; }
+
+  .tp-btn-same{
+    min-width: 210px;     /* ✅ bikin sama panjang (untuk tombol bawah) */
+    height: 46px;         /* ✅ bikin sama tinggi */
+    padding: 12px 16px;   /* tetap konsisten */
+  }
+
+  /* ✅ FIT untuk tombol Kembali di header (lebar ngikut teks) */
+  .tp-btn-fit{
+    min-width: 0 !important;
+    width: auto !important;
+    height: 46px;
+    padding: 12px 16px;
+  }
+
+  .tp-btn-ghost{ background:#fff; color: var(--navy2); }
+  .tp-btn-primary{ background: var(--yellow); border-color: transparent; color: #0f172a; }
+
+  .tp-btn-danger{
+    background: #fff;
+    border-color: rgba(239,68,68,.35);
+    color: #ef4444;
+  }
+  .tp-btn-danger:hover{
+    border-color: rgba(239,68,68,.65);
+    box-shadow: 0 12px 20px rgba(239,68,68,.10);
+  }
+
+  /* ✅ posisi tombol bawah: kiri & kanan */
   .tp-actions{
     display:flex;
-    justify-content: space-between;
     gap: 12px;
     padding: 10px 6px 2px;
     margin-top: 6px;
   }
+  .tp-actions-split{
+    justify-content: space-between;
+    align-items:center;
+  }
 
-  /* RADIO CARDS */
+  /* RADIO */
   .tp-radio-wrap{ display:grid; gap: 12px; }
   .tp-radio-card{
     display:flex;
@@ -565,6 +675,12 @@
     user-select:none;
     color: var(--navy2);
     font-size: 16px;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+  }
+  .tp-radio-card:hover{
+    border-color: rgba(24,79,97,.55);
+    box-shadow: 0 10px 18px rgba(2,8,23,.07);
+    transform: translateY(-1px);
   }
   .tp-radio-card input{ display:none; }
   .tp-radio-dot{
@@ -574,15 +690,21 @@
     border: 2px solid var(--navy2);
     display:inline-block;
     position:relative;
+    flex: 0 0 auto;
   }
   .tp-radio-card.active{
     background: #dff1ff;
-    border-color: #b6dcff;
+    border-color: #9fd0ff;
+    box-shadow: 0 0 0 4px rgba(24,79,97,.10);
   }
   .tp-radio-card.active .tp-radio-dot::after{
     content:"";
     position:absolute;
-    inset: 4px;
+    left:50%;
+    top:50%;
+    width: 8px;
+    height: 8px;
+    transform: translate(-50%, -50%);
     border-radius:999px;
     background: var(--navy2);
   }
@@ -592,8 +714,13 @@
     border: 1px solid #e6eef2;
     border-radius: 14px;
     background:#fff;
-    box-shadow: 0 10px 20px rgba(2,8,23,.04);
+    box-shadow: 0 10px 18px rgba(2,8,23,.05);
     overflow:hidden;
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  }
+  .tp-acc-item:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 12px 20px rgba(2,8,23,.07);
   }
 
   .tp-acc-head{
@@ -609,11 +736,32 @@
     font-family: inherit;
     color: var(--navy2);
     font-size: 16px;
+    transition: background .18s ease, color .18s ease;
   }
 
-  .tp-acc-left{ display:flex; align-items:center; gap: 10px; }
+  .tp-acc-count{
+    font-size: 13px;
+    opacity: .78;
+    white-space: nowrap;
+    margin-right: 10px;
+    color: currentColor;
+  }
+
+  .tp-acc-item.has-file{
+    border-color: rgba(34,197,94,.65);
+    box-shadow: 0 14px 26px rgba(2,8,23,.08);
+  }
+  .tp-acc-item.has-file .tp-acc-head{
+    background: #22c55e;
+    color: #fff;
+  }
+  .tp-acc-item.has-file .tp-acc-left i{ color:#fff; opacity:.95; }
+  .tp-acc-item.has-file .tp-acc-ic{ color:#fff; opacity:.95; }
+
+  .tp-acc-left{ display:flex; align-items:center; gap: 10px; min-width: 0; }
   .tp-acc-left i{ font-size: 18px; }
-  .tp-acc-ic{ opacity:.85; transition: transform .15s ease; font-size: 18px; }
+  .tp-acc-right{ display:flex; align-items:center; gap: 10px; flex: 0 0 auto; }
+  .tp-acc-ic{ opacity:.9; transition: transform .16s ease; font-size: 18px; }
 
   .tp-acc-body{
     border-top: 1px solid #eef3f6;
@@ -621,36 +769,7 @@
     padding: 14px;
   }
 
-  .tp-upload-row{ margin-bottom: 0; }
-
-  /* FILE EXISTING */
-  .tp-filebox{
-    width: 100%;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 12px 14px;
-    background:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    box-shadow: 0 10px 20px rgba(2,8,23,.06);
-  }
-  .tp-filebox-name{
-    color: var(--navy2);
-    font-size: 15px;
-    word-break: break-word;
-  }
-  .tp-filebox-x{
-    border:0;
-    background:transparent;
-    font-size: 20px;
-    font-weight: 400 !important;
-    line-height: 1;
-    cursor:pointer;
-    opacity: .75;
-    color: #0f172a;
-  }
-  .tp-filebox-x:hover{ opacity: 1; }
+  .tp-upload-row{ margin-bottom: 16px; }
 
   /* DROPZONE */
   .tp-dropzone{
@@ -664,8 +783,24 @@
     cursor:pointer;
     user-select:none;
     background:#fff;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
   }
+  .tp-dropzone:hover{
+    border-color: rgba(24,79,97,.70);
+    box-shadow: 0 0 0 4px rgba(24,79,97,.12), 0 12px 20px rgba(2,8,23,.06);
+    transform: translateY(-1px);
+  }
+
+  .tp-acc-item.has-file .tp-dropzone{
+    border-style: solid;
+    border-color: rgba(34,197,94,.90);
+    background: rgba(34,197,94,.05);
+    box-shadow: 0 0 0 4px rgba(34,197,94,.09), 0 12px 20px rgba(2,8,23,.05);
+    transform: translateY(-1px);
+  }
+
   .tp-file-hidden{ display:none; }
+
   .tp-drop-ic{
     width: 48px;
     height: 48px;
@@ -689,14 +824,61 @@
     border-radius: 10px;
   }
 
+  /* PREVIEW */
+  .tp-preview-wrap{
+    width: 100%;
+    margin-top: 12px;
+    border-top: 1px solid rgba(2,8,23,.06);
+    padding-top: 12px;
+    text-align: left;
+  }
+  .tp-preview-title{ color: var(--navy2); font-size: 14px; margin-bottom: 10px; }
+  .tp-preview-list{ display:grid; gap: 10px; }
+  .tp-preview-item{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 10px;
+    border: 1px solid rgba(2,8,23,.08);
+    border-radius: 12px;
+    background: #fff;
+  }
+  .tp-preview-left{ display:flex; align-items:center; gap: 10px; min-width: 0; flex: 1 1 auto; }
+  .tp-preview-thumb{
+    width: 42px; height: 42px; border-radius: 10px;
+    border: 1px solid rgba(2,8,23,.08);
+    background: #f8fafc; display:grid; place-items:center; overflow:hidden; flex: 0 0 auto;
+  }
+  .tp-preview-thumb img{ width:100%; height:100%; object-fit: cover; display:block; }
+  .tp-preview-info{ min-width:0; }
+  .tp-preview-name{ font-size: 14px; color: #0f172a; word-break: break-word; line-height: 1.35; }
+  .tp-preview-meta{ font-size: 12px; color: #64748b; margin-top: 2px; }
+
+  .tp-preview-remove{
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    border: 1px solid rgba(2,8,23,.10);
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor:pointer; flex: 0 0 auto; padding: 0; line-height: 1;
+    color: #0f172a;
+  }
+  .tp-preview-remove i{ font-size: 18px; line-height: 1; display:block; transform: translateY(0.5px); }
+
   @media(max-width:1100px){
-    .tp-actions{ flex-direction: column; }
-    .tp-btn{ justify-content:center; }
+    .tp-actions-split{
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+    }
+    .tp-btn-same{
+      width: 100%;
+      min-width: 0;
+    }
   }
 
-  /* =========================================================
-     PATCH: samakan jarak kolom/card dgn Tambah Pengadaan
-  ========================================================= */
+  /* PATCH spacing konsisten */
   .tp-cardbox{
     background:#fff !important;
     border-radius:14px !important;
@@ -705,24 +887,10 @@
     margin-bottom: 14px !important;
     overflow: hidden !important;
   }
-  .tp-cardbox > div{
-    padding: 18px 18px 18px !important;
-  }
-  .tp-grid{
-    padding: 0 !important;
-    gap: 14px 18px !important;
-  }
-  .tp-section-title{
-    padding: 0 0 10px !important;
-  }
-  .tp-divider{
-    margin: 0 0 14px !important;
-  }
-  .tp-acc{
-    padding: 0 !important;
-    display: grid !important;
-    gap: 14px !important;
-  }
+  .tp-cardbox > div{ padding: 18px 18px 18px !important; }
+  .tp-grid{ padding: 0 !important; gap: 14px 18px !important; }
+  .tp-divider{ margin-left:0 !important; margin-right:0 !important; }
+  .tp-acc{ padding: 0 !important; display: grid !important; gap: 14px !important; }
   .tp-help{
     margin: 0 0 12px !important;
     font-size: 15px;
@@ -731,31 +899,50 @@
 </style>
 
 <script>
+  // toggle active state untuk radio cards
+  document.addEventListener('click', function(e){
+    const card = e.target.closest('.tp-radio-card');
+    if(!card) return;
+
+    const wrap = card.closest('.tp-radio-wrap');
+    if(!wrap) return;
+
+    wrap.querySelectorAll('.tp-radio-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+
+    const input = card.querySelector('input[type="radio"]');
+    if(input) input.checked = true;
+  });
+
   document.addEventListener('DOMContentLoaded', function(){
+    // ✅ Hapus Perubahan: balikin kondisi awal (paling aman untuk upload/preview)
+    const resetNow = () => window.location.reload();
+    const resetBtn = document.getElementById('btnResetChanges');
+    if(resetBtn) resetBtn.addEventListener('click', resetNow);
 
-    // ===== radio cards active (konsisten dgn Tambah Pengadaan) =====
-    document.addEventListener('click', function(e){
-      const card = e.target.closest('.tp-radio-card');
-      if(!card) return;
-
-      const wrap = card.closest('.tp-radio-wrap');
-      if(!wrap) return;
-
-      wrap.querySelectorAll('.tp-radio-card').forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-
-      const input = card.querySelector('input[type="radio"]');
-      if(input) input.checked = true;
-    });
-
-    // set active awal sesuai radio checked
+    // set active sesuai checked
     document.querySelectorAll('.tp-radio-wrap').forEach(wrap => {
       wrap.querySelectorAll('.tp-radio-card').forEach(c => c.classList.remove('active'));
       const checked = wrap.querySelector('input[type="radio"]:checked');
       if(checked) checked.closest('.tp-radio-card').classList.add('active');
     });
 
-    // ===== accordion default: ketutup =====
+    // Inject count
+    document.querySelectorAll('.tp-acc-item').forEach(item => {
+      const right = item.querySelector('.tp-acc-right');
+      const chev = item.querySelector('.tp-acc-ic');
+      if(!right || !chev) return;
+
+      if(!right.querySelector('.tp-acc-count')){
+        const count = document.createElement('span');
+        count.className = 'tp-acc-count';
+        count.hidden = true;
+        count.textContent = '';
+        right.insertBefore(count, chev);
+      }
+    });
+
+    // accordion: default CLOSED
     document.querySelectorAll('.tp-acc-item').forEach(item => {
       const head = item.querySelector('.tp-acc-head');
       const body = item.querySelector('.tp-acc-body');
@@ -774,10 +961,18 @@
       });
     });
 
-    // tombol "Pilih File" click = trigger input file
+    // "Pilih File" trigger input
     document.querySelectorAll('.tp-dropzone').forEach(zone => {
       const input = zone.querySelector('input[type="file"]');
       const btn = zone.querySelector('.tp-drop-btn');
+
+      const title = zone.querySelector('.tp-drop-title');
+      const sub = zone.querySelector('.tp-drop-sub');
+
+      if(title && !title.dataset.defaultText) title.dataset.defaultText = title.textContent.trim();
+      if(sub && !sub.dataset.defaultText) sub.dataset.defaultText = sub.textContent.trim();
+      if(btn && !btn.dataset.defaultText) btn.dataset.defaultText = btn.textContent.trim();
+
       if(input && btn){
         btn.addEventListener('click', (ev) => {
           ev.preventDefault();
@@ -786,67 +981,206 @@
       }
     });
 
-    // ===== helper: update badge (x/1) per sesi =====
-    function updateItemCount(accItem){
-      if(!accItem) return;
+    const getIconHtml = (file) => {
+      const name = (file.name || '').toLowerCase();
+      const type = (file.type || '').toLowerCase();
+      if(type.startsWith('image/')) return '<i class="bi bi-image"></i>';
+      if(name.endsWith('.pdf')) return '<i class="bi bi-file-earmark-pdf"></i>';
+      if(name.endsWith('.doc') || name.endsWith('.docx')) return '<i class="bi bi-file-earmark-word"></i>';
+      if(name.endsWith('.xls') || name.endsWith('.xlsx') || name.endsWith('.csv')) return '<i class="bi bi-file-earmark-excel"></i>';
+      if(name.endsWith('.ppt') || name.endsWith('.pptx')) return '<i class="bi bi-file-earmark-ppt"></i>';
+      return '<i class="bi bi-file-earmark"></i>';
+    };
 
-      const row = accItem.querySelector('.tp-upload-row');
-      const filledEl = accItem.querySelector('.js-item-filled');
-      if(!row || !filledEl) return;
+    const formatSize = (bytes) => {
+      if(!bytes && bytes !== 0) return '';
+      if(bytes < 1024) return bytes + ' B';
+      const kb = bytes / 1024;
+      if(kb < 1024) return kb.toFixed(1) + ' KB';
+      const mb = kb / 1024;
+      return mb.toFixed(1) + ' MB';
+    };
 
-      const del = row.querySelector('.tp-del-flag');
-      const has = row.getAttribute('data-has') === '1';
-      const fileInput = row.querySelector('input[type="file"]');
-      const hasNew = !!(fileInput && fileInput.files && fileInput.files.length > 0);
-      const willDelete = del && del.value === '1';
+    // Edit mode: existing + new
+    document.querySelectorAll('.tp-acc-item').forEach(item => {
+      const fileInput = item.querySelector('input[type="file"]');
+      const zone = item.querySelector('.tp-dropzone');
+      if(!fileInput || !zone) return;
 
-      const filled = ((has && !willDelete) || hasNew) ? 1 : 0;
-      filledEl.textContent = String(filled);
-    }
+      const title = zone.querySelector('.tp-drop-title');
+      const sub = zone.querySelector('.tp-drop-sub');
+      const btn = zone.querySelector('.tp-drop-btn');
 
-    document.querySelectorAll('.tp-acc-item').forEach(item => updateItemCount(item));
+      const previewWrap = zone.querySelector('.tp-preview-wrap');
+      const previewList = zone.querySelector('.tp-preview-list');
 
-    // ===== klik × => set delete flag, hide filebox, show dropzone =====
-    document.addEventListener('click', function(ev){
-      const x = ev.target.closest('.tp-existing-x');
-      if(!x) return;
+      const headCount = item.querySelector('.tp-acc-count');
 
-      const accItem = x.closest('.tp-acc-item');
-      const row = x.closest('.tp-upload-row');
-      if(!row) return;
+      let storedFiles = [];
+      const fileKey = (f) => `${f.name}__${f.size}__${f.lastModified}`;
 
-      const delFlag = row.querySelector('.tp-del-flag');
-      const existWrap = row.querySelector('.tp-file-exist');
-      const zone = row.querySelector('.tp-dropzone');
-      const input = row.querySelector('input[type="file"]');
+      const rebuildInputFiles = () => {
+        const dt = new DataTransfer();
+        storedFiles.forEach(f => dt.items.add(f));
+        fileInput.files = dt.files;
+      };
 
-      if(delFlag) delFlag.value = '1';
-      if(existWrap) existWrap.style.display = 'none';
-      if(zone) zone.style.display = 'grid';
-      if(input) input.value = '';
+      const ensureWrapVisible = () => {
+        if(previewWrap) previewWrap.hidden = false;
+      };
 
-      row.setAttribute('data-has', '0');
-      updateItemCount(accItem);
-    });
+      const clearNewPreviewOnly = () => {
+        if(!previewList) return;
+        previewList.querySelectorAll('.tp-preview-item:not(.tp-existing)').forEach(n => n.remove());
+      };
 
-    // ===== saat user pilih file baru: anggap terisi + update count =====
-    document.querySelectorAll('.tp-upload-row input[type="file"]').forEach(inp => {
-      inp.addEventListener('change', function(){
-        const accItem = inp.closest('.tp-acc-item');
-        const row = inp.closest('.tp-upload-row');
-        if(!row) return;
+      const renderNewPreview = () => {
+        clearNewPreviewOnly();
+        if(!previewList) return;
 
-        const delFlag = row.querySelector('.tp-del-flag');
-        if(delFlag) delFlag.value = '0';
+        storedFiles.forEach((file) => {
+          const row = document.createElement('div');
+          row.className = 'tp-preview-item';
 
-        const existWrap = row.querySelector('.tp-file-exist');
-        if(existWrap) existWrap.style.display = 'none';
+          const left = document.createElement('div');
+          left.className = 'tp-preview-left';
 
-        row.setAttribute('data-has', '0');
-        updateItemCount(accItem);
+          const thumb = document.createElement('div');
+          thumb.className = 'tp-preview-thumb';
+
+          const type = (file.type || '').toLowerCase();
+          if(type.startsWith('image/')){
+            const img = document.createElement('img');
+            img.alt = file.name || 'preview';
+            img.src = URL.createObjectURL(file);
+            img.onload = () => { try{ URL.revokeObjectURL(img.src); }catch(e){} };
+            thumb.appendChild(img);
+          } else {
+            thumb.innerHTML = getIconHtml(file);
+          }
+
+          const info = document.createElement('div');
+          info.className = 'tp-preview-info';
+
+          const name = document.createElement('div');
+          name.className = 'tp-preview-name';
+          name.textContent = file.name || 'Dokumen';
+
+          const meta = document.createElement('div');
+          meta.className = 'tp-preview-meta';
+          meta.textContent = formatSize(file.size);
+
+          info.appendChild(name);
+          info.appendChild(meta);
+
+          left.appendChild(thumb);
+          left.appendChild(info);
+
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'tp-preview-remove';
+          removeBtn.setAttribute('aria-label', 'Hapus file');
+          removeBtn.dataset.key = fileKey(file);
+          removeBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+
+          removeBtn.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            const k = removeBtn.dataset.key;
+            storedFiles = storedFiles.filter(f => fileKey(f) !== k);
+            rebuildInputFiles();
+            syncUI();
+          });
+
+          row.appendChild(left);
+          row.appendChild(removeBtn);
+          previewList.appendChild(row);
+        });
+
+        if(previewWrap){
+          const existingAlive = item.querySelectorAll('.tp-preview-item.tp-existing[data-existing="1"]').length;
+          previewWrap.hidden = (existingAlive + storedFiles.length === 0);
+        }
+      };
+
+      const syncUI = () => {
+        const existingAlive = item.querySelectorAll('.tp-preview-item.tp-existing[data-existing="1"]').length;
+        const total = existingAlive + storedFiles.length;
+        const hasFile = total > 0;
+
+        item.classList.toggle('has-file', hasFile);
+
+        if(headCount){
+          if(hasFile){
+            headCount.textContent = (total === 1) ? '1 file sudah terupload' : (total + ' file sudah terupload');
+            headCount.hidden = false;
+          } else {
+            headCount.textContent = '';
+            headCount.hidden = true;
+          }
+        }
+
+        if(hasFile){
+          ensureWrapVisible();
+          if(title) title.textContent = (total === 1 && storedFiles.length === 1) ? storedFiles[0].name : (total + ' file dipilih');
+          if(sub) sub.textContent = 'File dipilih';
+          if(btn) btn.textContent = 'Tambah File';
+          renderNewPreview();
+        } else {
+          if(title && title.dataset.defaultText) title.textContent = title.dataset.defaultText;
+          if(sub && sub.dataset.defaultText) sub.textContent = sub.dataset.defaultText;
+          if(btn && btn.dataset.defaultText) btn.textContent = btn.dataset.defaultText;
+          if(previewList) previewList.innerHTML = '';
+          if(previewWrap) previewWrap.hidden = true;
+        }
+      };
+
+      // remove existing -> push hidden remove[]
+      item.querySelectorAll('.js-remove-existing').forEach(btnX => {
+        btnX.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+
+          const row = btnX.closest('.tp-preview-item.tp-existing');
+          if(!row) return;
+
+          const path = row.getAttribute('data-path') || '';
+          const wrap = item.querySelector('.js-remove-wrap');
+          if(wrap && path){
+            const key = fileInput.getAttribute('data-key') || '';
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key + '_remove[]';
+            input.value = path;
+            wrap.appendChild(input);
+          }
+
+          row.remove();
+          syncUI();
+        });
       });
-    });
 
+      fileInput.addEventListener('change', () => {
+        const picked = (fileInput.files && fileInput.files.length) ? Array.from(fileInput.files) : [];
+        if(picked.length){
+          const existing = new Set(storedFiles.map(fileKey));
+          picked.forEach(f => {
+            const k = fileKey(f);
+            if(!existing.has(k)){
+              storedFiles.push(f);
+              existing.add(k);
+            }
+          });
+          rebuildInputFiles();
+        }
+        fileInput.value = '';
+        syncUI();
+      });
+
+      storedFiles = [];
+      rebuildInputFiles();
+      syncUI();
+    });
   });
 </script>
 
