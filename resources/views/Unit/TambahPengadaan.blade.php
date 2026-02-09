@@ -18,7 +18,8 @@
   <link rel="stylesheet" href="{{ asset('css/Unit.css') }}">
 </head>
 
-<body class="dash-body">
+{{-- ✅ Tambah 1 class khusus page ini biar CSS inline TIDAK ngubah UI page lain --}}
+<body class="dash-body page-unit-tp">
 @php
   // dummy frontend (nanti backend tinggal ganti)
   $unitName = "Fakultas Teknik";
@@ -31,7 +32,7 @@
 @endphp
 
 <div class="dash-wrap">
-  {{-- SIDEBAR (SAMA PERSIS DENGAN DASHBOARD UNIT) --}}
+  {{-- SIDEBAR (SAMA PERSIS DENGAN DASHBOARD UNIT) Pure Unit --}}
   <aside class="dash-sidebar">
     <div class="dash-brand">
       <div class="dash-logo">
@@ -40,7 +41,7 @@
 
       <div class="dash-text">
         <div class="dash-app">SIAPABAJA</div>
-        <div class="dash-role">PIC (UNIT)</div>
+        <div class="dash-role">PIC (Unit)</div>
       </div>
     </div>
 
@@ -48,7 +49,6 @@
       <div class="dash-unit-label">Unit Kerja :</div>
       <div class="dash-unit-name">{{ $unitName }}</div>
     </div>
-
 
     <nav class="dash-nav">
       <a class="dash-link" href="{{ url('/unit/dashboard') }}">
@@ -65,6 +65,11 @@
         <span class="ic"><i class="bi bi-plus-square"></i></span>
         Tambah Pengadaan
       </a>
+
+       <a class="dash-link" href="{{ route('unit.kelola.akun') }}">
+    <span class="ic"><i class="bi bi-person-gear"></i></span>
+    Kelola Akun
+  </a>
     </nav>
 
     <div class="dash-side-actions">
@@ -1392,6 +1397,50 @@
         </div>
       </section>
 
+      {{-- E. Dokumen Tidak Dipersyaratkan --}}
+      <section class="dash-table tp-cardbox" style="border-radius:14px; overflow:visible; margin-bottom:14px;">
+        <div style="padding:18px 18px 16px;">
+          <div class="tp-section">
+            <div class="tp-section-title">
+              <span>E. Dokumen Tidak Dipersyaratkan</span>
+            </div>
+            <div class="tp-divider"></div>
+
+            <div class="tp-help" style="margin:0 6px 14px;">
+              Centang dokumen yang <b>tidak dipersyaratkan</b>. List ini otomatis mengambil nama dokumen dari kolom D.
+            </div>
+
+            {{-- Hidden (untuk kebutuhan popup detail / backend) --}}
+            <input type="hidden" name="dokumen_tidak_dipersyaratkan_json" id="tp-nondoc-json" value="[]">
+
+            <div class="tp-nondoc-wrap">
+              <div class="tp-nondoc-head">
+                <div class="tp-nondoc-title">
+                  <i class="bi bi-check2-square"></i>
+                  Pilih Dokumen
+                </div>
+                <div class="tp-nondoc-actions">
+                  <button type="button" class="tp-nondoc-btn" id="tp-nondoc-clear">
+                    <i class="bi bi-x-circle"></i>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <div class="tp-nondoc-box" id="tp-nondoc-list">
+                {{-- di-inject oleh JS --}}
+              </div>
+
+              <div class="tp-nondoc-selected" id="tp-nondoc-selected" hidden>
+                <div class="tp-nondoc-selected-title">Terpilih</div>
+                <div class="tp-nondoc-chips" id="tp-nondoc-chips"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       <div class="tp-actions">
         <a href="{{ url('/unit/dashboard') }}" class="tp-btn tp-btn-ghost">
           <i class="bi bi-arrow-left"></i>
@@ -1408,42 +1457,47 @@
 </div>
 
 <style>
-  .dash-body{
-    font-size: 18px;
+  /* =========================================================
+     ✅ PENTING: SEMUA CSS DI-SCOPE KE .page-ppk-tp
+     Biar tidak “ngerusak” UI halaman lain yang juga pakai Unit.css
+     ========================================================= */
+  :where(.page-unit-tp){
+    /* jangan paksa font-size global; biarkan Unit.css yang atur */
     line-height: 1.6;
     font-weight: 400;
   }
-  .dash-app{ font-weight: 600 !important; }
-  .dash-header h1{ font-weight: 600 !important; }
 
-  .dash-role,
-  .dash-unit-label,
-  .dash-unit-name,
-  .dash-link,
-  .dash-side-btn,
-  .dash-header p,
-  .tp-section-title,
-  .tp-badge,
-  .tp-label,
-  .tp-input,
-  .tp-select,
-  .tp-actions .tp-btn,
-  .tp-help,
-  .tp-radio-card,
-  .tp-radio-text,
-  .tp-acc-head,
-  .tp-upload-label,
-  .tp-drop-title,
-  .tp-drop-sub,
-  .tp-drop-meta,
-  .tp-drop-btn,
-  .tp-preview-title,
-  .tp-acc-count{
+  :where(.page-unit-tp) .dash-app{ font-weight: 600 !important; }
+  :where(.page-unit-tp) .dash-header h1{ font-weight: 600 !important; }
+
+  :where(.page-unit-tp) .dash-role,
+  :where(.page-unit-tp) .dash-unit-label,
+  :where(.page-unit-tp) .dash-unit-name,
+  :where(.page-unit-tp) .dash-link,
+  :where(.page-unit-tp) .dash-side-btn,
+  :where(.page-unit-tp) .dash-header p,
+  :where(.page-unit-tp) .tp-section-title,
+  :where(.page-unit-tp) .tp-badge,
+  :where(.page-unit-tp) .tp-label,
+  :where(.page-unit-tp) .tp-input,
+  :where(.page-unit-tp) .tp-select,
+  :where(.page-unit-tp) .tp-actions .tp-btn,
+  :where(.page-unit-tp) .tp-help,
+  :where(.page-unit-tp) .tp-radio-card,
+  :where(.page-unit-tp) .tp-radio-text,
+  :where(.page-unit-tp) .tp-acc-head,
+  :where(.page-unit-tp) .tp-upload-label,
+  :where(.page-unit-tp) .tp-drop-title,
+  :where(.page-unit-tp) .tp-drop-sub,
+  :where(.page-unit-tp) .tp-drop-meta,
+  :where(.page-unit-tp) .tp-drop-btn,
+  :where(.page-unit-tp) .tp-preview-title,
+  :where(.page-unit-tp) .tp-acc-count{
     font-weight: 400 !important;
   }
 
-  .dash-sidebar{ display:flex; flex-direction:column; }
-  .dash-side-actions{
+  :where(.page-unit-tp) .dash-sidebar{ display:flex; flex-direction:column; }
+  :where(.page-unit-tp) .dash-side-actions{
     margin-top:auto;
     padding-top: 14px;
     border-top: 1px solid rgba(255,255,255,.12);
@@ -1452,10 +1506,9 @@
   }
 
   /* =============================
-     JUDUL A/B/C/D: BG DIHILANGIN
-     - konten tetap sama, cuma tanpa background bar
+     JUDUL A/B/C/D/E: BG DIHILANGIN
   ============================= */
-  .tp-section-title{
+  :where(.page-unit-tp) .tp-section-title{
     display:flex;
     align-items:center;
     gap:10px;
@@ -1467,7 +1520,7 @@
     width: 100%;
     box-sizing: border-box;
   }
-  .tp-badge{
+  :where(.page-unit-tp) .tp-badge{
     width: 30px;
     height: 30px;
     border-radius: 10px;
@@ -1479,20 +1532,23 @@
     font-size: 15px;
     flex: 0 0 auto;
   }
-  .tp-divider{
+  :where(.page-unit-tp) .tp-divider{
     height:1px;
     background: #eef3f6;
     margin: 12px 0 14px;
   }
 
-  .tp-label{
+  :where(.page-unit-tp) .tp-label{
     display:block;
     font-size: 15px;
     color: var(--muted);
     margin-bottom: 8px;
   }
 
-  .tp-input, .tp-select, .tp-textarea, .tp-file{
+  :where(.page-unit-tp) .tp-input,
+  :where(.page-unit-tp) .tp-select,
+  :where(.page-unit-tp) .tp-textarea,
+  :where(.page-unit-tp) .tp-file{
     width:100%;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
@@ -1503,32 +1559,30 @@
     background: #fff;
     transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
   }
-  .tp-control{ position:relative; }
-  .tp-control .tp-select{ appearance:none; padding-right: 42px; }
+  :where(.page-unit-tp) .tp-control{ position:relative; }
+  :where(.page-unit-tp) .tp-control .tp-select{ appearance:none; padding-right: 42px; }
 
   /* =============================
      DROPDOWN:
      - value terpilih biru Unsoed
      - placeholder saja yang abu
   ============================= */
-  .tp-select{
+  :where(.page-unit-tp) .tp-select{
     color: var(--navy2) !important;
     background-color: #fff !important;
   }
-  .tp-select:focus{
-    color: var(--navy2) !important;
-  }
-  .tp-select:invalid{ color:#94a3b8 !important; }
+  :where(.page-unit-tp) .tp-select:focus{ color: var(--navy2) !important; }
+  :where(.page-unit-tp) .tp-select:invalid{ color:#94a3b8 !important; }
 
-  .tp-select option:checked{
+  :where(.page-unit-tp) .tp-select option:checked{
     background: var(--navy2) !important;
     color: #fff !important;
   }
-  .tp-select option:hover{
+  :where(.page-unit-tp) .tp-select option:hover{
     background: rgba(24,79,97,.12) !important;
   }
 
-  .tp-icon{
+  :where(.page-unit-tp) .tp-icon{
     position:absolute;
     right: 14px;
     top: 50%;
@@ -1540,30 +1594,33 @@
     color: var(--navy2);
   }
 
-  .tp-input:hover, .tp-select:hover{
+  :where(.page-unit-tp) .tp-input:hover,
+  :where(.page-unit-tp) .tp-select:hover{
     border-color: rgba(24,79,97,.62);
     box-shadow: 0 8px 14px rgba(2,8,23,.05);
     transform: translateY(-1px);
   }
-  .tp-input:focus, .tp-select:focus, .tp-textarea:focus{
+  :where(.page-unit-tp) .tp-input:focus,
+  :where(.page-unit-tp) .tp-select:focus,
+  :where(.page-unit-tp) .tp-textarea:focus{
     border-color: var(--navy2);
     box-shadow: 0 0 0 4px rgba(24,79,97,.14), 0 10px 18px rgba(2,8,23,.06);
     transform: translateY(-1px);
   }
-  .tp-control:focus-within .tp-icon{
+  :where(.page-unit-tp) .tp-control:focus-within .tp-icon{
     opacity: .95;
     color: var(--navy2);
     transform: translateY(-50%) rotate(-180deg);
   }
 
-  .tp-actions{
+  :where(.page-unit-tp) .tp-actions{
     display:flex;
     justify-content: space-between;
     gap: 12px;
     padding: 10px 6px 2px;
     margin-top: 6px;
   }
-  .tp-btn{
+  :where(.page-unit-tp) .tp-btn{
     display:inline-flex;
     align-items:center;
     gap:10px;
@@ -1576,17 +1633,17 @@
     background:#fff;
     transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
   }
-  .tp-btn:hover{
+  :where(.page-unit-tp) .tp-btn:hover{
     transform: translateY(-1px);
     box-shadow: 0 12px 20px rgba(2,8,23,.08);
   }
-  .tp-btn i{ font-size: 18px; }
-  .tp-btn-ghost{ background:#fff; color: var(--navy2); }
-  .tp-btn-primary{ background: var(--yellow); border-color: transparent; color: #0f172a; }
+  :where(.page-unit-tp) .tp-btn i{ font-size: 18px; }
+  :where(.page-unit-tp) .tp-btn-ghost{ background:#fff; color: var(--navy2); }
+  :where(.page-unit-tp) .tp-btn-primary{ background: var(--yellow); border-color: transparent; color: #0f172a; }
 
   /* RADIO */
-  .tp-radio-wrap{ display:grid; gap: 12px; }
-  .tp-radio-card{
+  :where(.page-unit-tp) .tp-radio-wrap{ display:grid; gap: 12px; }
+  :where(.page-unit-tp) .tp-radio-card{
     display:flex;
     align-items:center;
     gap: 12px;
@@ -1600,13 +1657,13 @@
     font-size: 16px;
     transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
   }
-  .tp-radio-card:hover{
+  :where(.page-unit-tp) .tp-radio-card:hover{
     border-color: rgba(24,79,97,.55);
     box-shadow: 0 10px 18px rgba(2,8,23,.07);
     transform: translateY(-1px);
   }
-  .tp-radio-card input{ display:none; }
-  .tp-radio-dot{
+  :where(.page-unit-tp) .tp-radio-card input{ display:none; }
+  :where(.page-unit-tp) .tp-radio-dot{
     width: 18px;
     height: 18px;
     border-radius: 999px;
@@ -1615,12 +1672,12 @@
     position:relative;
     flex: 0 0 auto;
   }
-  .tp-radio-card.active{
+  :where(.page-unit-tp) .tp-radio-card.active{
     background: #dff1ff;
     border-color: #9fd0ff;
     box-shadow: 0 0 0 4px rgba(24,79,97,.10);
   }
-  .tp-radio-card.active .tp-radio-dot::after{
+  :where(.page-unit-tp) .tp-radio-card.active .tp-radio-dot::after{
     content:"";
     position:absolute;
     left:50%;
@@ -1633,7 +1690,7 @@
   }
 
   /* ACCORDION */
-  .tp-acc-item{
+  :where(.page-unit-tp) .tp-acc-item{
     border: 1px solid #e6eef2;
     border-radius: 14px;
     background:#fff;
@@ -1641,12 +1698,12 @@
     overflow:hidden;
     transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
   }
-  .tp-acc-item:hover{
+  :where(.page-unit-tp) .tp-acc-item:hover{
     transform: translateY(-1px);
     box-shadow: 0 12px 20px rgba(2,8,23,.07);
   }
 
-  .tp-acc-head{
+  :where(.page-unit-tp) .tp-acc-head{
     width:100%;
     display:flex;
     justify-content:space-between;
@@ -1663,7 +1720,7 @@
   }
 
   /* ✅ text tipis jumlah file (di header sesi) */
-  .tp-acc-count{
+  :where(.page-unit-tp) .tp-acc-count{
     font-size: 13px;
     opacity: .78;
     white-space: nowrap;
@@ -1672,47 +1729,47 @@
   }
 
   /* kalau sesi sudah ada file: header jadi hijau */
-  .tp-acc-item.has-file{
+  :where(.page-unit-tp) .tp-acc-item.has-file{
     border-color: rgba(34,197,94,.65);
     box-shadow: 0 14px 26px rgba(2,8,23,.08);
   }
-  .tp-acc-item.has-file .tp-acc-head{
+  :where(.page-unit-tp) .tp-acc-item.has-file .tp-acc-head{
     background: #22c55e;
     color: #fff;
   }
-  .tp-acc-item.has-file .tp-acc-left i{ color:#fff; opacity:.95; }
-  .tp-acc-item.has-file .tp-acc-ic{ color:#fff; opacity:.95; }
+  :where(.page-unit-tp) .tp-acc-item.has-file .tp-acc-left i{ color:#fff; opacity:.95; }
+  :where(.page-unit-tp) .tp-acc-item.has-file .tp-acc-ic{ color:#fff; opacity:.95; }
 
-  .tp-acc-left{
+  :where(.page-unit-tp) .tp-acc-left{
     display:flex;
     align-items:center;
     gap: 10px;
     min-width: 0;
   }
-  .tp-acc-left i{ font-size: 18px; }
+  :where(.page-unit-tp) .tp-acc-left i{ font-size: 18px; }
 
-  .tp-acc-right{
+  :where(.page-unit-tp) .tp-acc-right{
     display:flex;
     align-items:center;
     gap: 10px;
     flex: 0 0 auto;
   }
-  .tp-acc-ic{
+  :where(.page-unit-tp) .tp-acc-ic{
     opacity:.9;
     transition: transform .16s ease;
     font-size: 18px;
   }
 
-  .tp-acc-body{
+  :where(.page-unit-tp) .tp-acc-body{
     border-top: 1px solid #eef3f6;
     background:#fff;
     padding: 14px;
   }
 
-  .tp-upload-row{ margin-bottom: 16px; }
+  :where(.page-unit-tp) .tp-upload-row{ margin-bottom: 16px; }
 
   /* DROPZONE */
-  .tp-dropzone{
+  :where(.page-unit-tp) .tp-dropzone{
     display:grid;
     place-items:center;
     text-align:center;
@@ -1725,13 +1782,13 @@
     background:#fff;
     transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
   }
-  .tp-dropzone:hover{
+  :where(.page-unit-tp) .tp-dropzone:hover{
     border-color: rgba(24,79,97,.70);
     box-shadow: 0 0 0 4px rgba(24,79,97,.12), 0 12px 20px rgba(2,8,23,.06);
     transform: translateY(-1px);
   }
 
-  .tp-acc-item.has-file .tp-dropzone{
+  :where(.page-unit-tp) .tp-acc-item.has-file .tp-dropzone{
     border-style: solid;
     border-color: rgba(34,197,94,.90);
     background: rgba(34,197,94,.05);
@@ -1739,8 +1796,8 @@
     transform: translateY(-1px);
   }
 
-  .tp-file-hidden{ display:none; }
-  .tp-drop-ic{
+  :where(.page-unit-tp) .tp-file-hidden{ display:none; }
+  :where(.page-unit-tp) .tp-drop-ic{
     width: 48px;
     height: 48px;
     border-radius: 999px;
@@ -1752,10 +1809,10 @@
     background:#fff;
     transition: color .18s ease, background .18s ease, border-color .18s ease;
   }
-  .tp-drop-title{ color: var(--navy2); font-size: 16px; }
-  .tp-drop-sub{ color: var(--muted); font-size: 14px; }
-  .tp-drop-meta{ color:#94a3b8; font-size: 13px; }
-  .tp-drop-btn{
+  :where(.page-unit-tp) .tp-drop-title{ color: var(--navy2); font-size: 16px; }
+  :where(.page-unit-tp) .tp-drop-sub{ color: var(--muted); font-size: 14px; }
+  :where(.page-unit-tp) .tp-drop-meta{ color:#94a3b8; font-size: 13px; }
+  :where(.page-unit-tp) .tp-drop-btn{
     margin-top: 8px;
     background: var(--navy2);
     color:#fff;
@@ -1764,29 +1821,26 @@
     border-radius: 10px;
     transition: transform .14s ease, box-shadow .14s ease, background .14s ease;
   }
-  .tp-dropzone:hover .tp-drop-btn{
+  :where(.page-unit-tp) .tp-dropzone:hover .tp-drop-btn{
     transform: translateY(-1px);
     box-shadow: 0 10px 16px rgba(2,8,23,.08);
   }
 
   /* PREVIEW LIST */
-  .tp-preview-wrap{
+  :where(.page-unit-tp) .tp-preview-wrap{
     width: 100%;
     margin-top: 12px;
     border-top: 1px solid rgba(2,8,23,.06);
     padding-top: 12px;
     text-align: left;
   }
-  .tp-preview-title{
+  :where(.page-unit-tp) .tp-preview-title{
     color: var(--navy2);
     font-size: 14px;
     margin-bottom: 10px;
   }
-  .tp-preview-list{
-    display:grid;
-    gap: 10px;
-  }
-  .tp-preview-item{
+  :where(.page-unit-tp) .tp-preview-list{ display:grid; gap: 10px; }
+  :where(.page-unit-tp) .tp-preview-item{
     display:flex;
     align-items:center;
     justify-content: space-between;
@@ -1796,14 +1850,14 @@
     border-radius: 12px;
     background: #fff;
   }
-  .tp-preview-left{
+  :where(.page-unit-tp) .tp-preview-left{
     display:flex;
     align-items:center;
     gap: 10px;
     min-width: 0;
     flex: 1 1 auto;
   }
-  .tp-preview-thumb{
+  :where(.page-unit-tp) .tp-preview-thumb{
     width: 42px;
     height: 42px;
     border-radius: 10px;
@@ -1814,27 +1868,27 @@
     overflow:hidden;
     flex: 0 0 auto;
   }
-  .tp-preview-thumb img{
+  :where(.page-unit-tp) .tp-preview-thumb img{
     width:100%;
     height:100%;
     object-fit: cover;
     display:block;
   }
-  .tp-preview-info{ min-width:0; }
-  .tp-preview-name{
+  :where(.page-unit-tp) .tp-preview-info{ min-width:0; }
+  :where(.page-unit-tp) .tp-preview-name{
     font-size: 14px;
     color: #0f172a;
     word-break: break-word;
     line-height: 1.35;
   }
-  .tp-preview-meta{
+  :where(.page-unit-tp) .tp-preview-meta{
     font-size: 12px;
     color: #64748b;
     margin-top: 2px;
   }
 
   /* ✅ X CENTER FIX */
-  .tp-preview-remove{
+  :where(.page-unit-tp) .tp-preview-remove{
     width: 34px;
     height: 34px;
     border-radius: 10px;
@@ -1850,25 +1904,25 @@
     transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
     color: #0f172a;
   }
-  .tp-preview-remove i{
+  :where(.page-unit-tp) .tp-preview-remove i{
     font-size: 18px;
     line-height: 1;
     display:block;
     transform: translateY(0.5px);
   }
-  .tp-preview-remove:hover{
+  :where(.page-unit-tp) .tp-preview-remove:hover{
     transform: translateY(-1px);
     box-shadow: 0 10px 16px rgba(2,8,23,.08);
     border-color: rgba(24,79,97,.35);
   }
 
   @media(max-width:1100px){
-    .tp-actions{ flex-direction: column; }
-    .tp-btn{ justify-content:center; }
+    :where(.page-unit-tp) .tp-actions{ flex-direction: column; }
+    :where(.page-unit-tp) .tp-btn{ justify-content:center; }
   }
 
   /* PATCH spacing konsisten */
-  .tp-cardbox{
+  :where(.page-unit-tp) .tp-cardbox{
     background:#fff !important;
     border-radius:14px !important;
     box-shadow: 0 10px 20px rgba(2, 8, 23, .06) !important;
@@ -1876,14 +1930,150 @@
     margin-bottom: 14px !important;
     overflow: hidden !important;
   }
-  .tp-cardbox > div{ padding: 18px 18px 18px !important; }
-  .tp-grid{ padding: 0 !important; gap: 14px 18px !important; }
-  .tp-divider{ margin-left:0 !important; margin-right:0 !important; }
-  .tp-acc{ padding: 0 !important; display: grid !important; gap: 14px !important; }
-  .tp-help{
+  :where(.page-unit-tp) .tp-cardbox > div{ padding: 18px 18px 18px !important; }
+  :where(.page-unit-tp) .tp-grid{ padding: 0 !important; gap: 14px 18px !important; }
+  :where(.page-unit-tp) .tp-divider{ margin-left:0 !important; margin-right:0 !important; }
+  :where(.page-unit-tp) .tp-acc{ padding: 0 !important; display: grid !important; gap: 14px !important; }
+  :where(.page-unit-tp) .tp-help{
     margin: 0 0 12px !important;
     font-size: 15px;
     color: #64748b;
+  }
+
+  /* =============================
+     E. Dokumen Tidak Dipersyaratkan
+  ============================= */
+  :where(.page-unit-tp) .tp-nondoc-wrap{
+    border: 1px solid #eef3f6;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 10px 18px rgba(2,8,23,.05);
+    overflow: hidden;
+  }
+  :where(.page-unit-tp) .tp-nondoc-head{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #dff1ff;
+    color: var(--navy2);
+    border-bottom: 1px solid #eef3f6;
+  }
+  :where(.page-unit-tp) .tp-nondoc-title{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    font-size: 16px;
+    color: var(--navy2);
+  }
+  :where(.page-unit-tp) .tp-nondoc-title i{ font-size: 18px; }
+  :where(.page-unit-tp) .tp-nondoc-actions{ display:flex; align-items:center; gap: 10px; }
+  :where(.page-unit-tp) .tp-nondoc-btn{
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    border: 1px solid rgba(2,8,23,.10);
+    background:#fff;
+    color: var(--navy2);
+    padding: 10px 12px;
+    border-radius: 12px;
+    cursor:pointer;
+    font-family: inherit;
+    font-size: 14px;
+    transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+  }
+  :where(.page-unit-tp) .tp-nondoc-btn:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 12px 18px rgba(2,8,23,.08);
+    border-color: rgba(24,79,97,.35);
+  }
+
+  :where(.page-unit-tp) .tp-nondoc-box{
+    padding: 14px;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-height: 380px;
+    overflow:auto;
+  }
+  @media(max-width:900px){
+    :where(.page-unit-tp) .tp-nondoc-box{ grid-template-columns: 1fr; }
+  }
+
+  :where(.page-unit-tp) .tp-nondoc-item{
+    display:flex;
+    align-items:flex-start;
+    gap: 10px;
+    border: 1px solid rgba(2,8,23,.08);
+    border-radius: 14px;
+    padding: 12px 12px;
+    background:#fff;
+    cursor:pointer;
+    user-select:none;
+    transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+  }
+  :where(.page-unit-tp) .tp-nondoc-item:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 12px 18px rgba(2,8,23,.08);
+    border-color: rgba(24,79,97,.35);
+  }
+  :where(.page-unit-tp) .tp-nondoc-item input{ display:none; }
+  :where(.page-unit-tp) .tp-nondoc-check{
+    width: 18px;
+    height: 18px;
+    border-radius: 6px;
+    border: 2px solid var(--navy2);
+    flex: 0 0 auto;
+    margin-top: 1px;
+    position: relative;
+  }
+  :where(.page-unit-tp) .tp-nondoc-text{
+    font-size: 15px;
+    color: #0f172a;
+    line-height: 1.35;
+  }
+  :where(.page-unit-tp) .tp-nondoc-item.is-checked{
+    background: rgba(24,79,97,.08);
+    border-color: rgba(24,79,97,.35);
+  }
+  :where(.page-unit-tp) .tp-nondoc-item.is-checked .tp-nondoc-check::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:50%;
+    width: 9px;
+    height: 9px;
+    transform: translate(-50%, -50%);
+    border-radius: 3px;
+    background: var(--navy2);
+  }
+
+  :where(.page-unit-tp) .tp-nondoc-selected{
+    border-top: 1px solid rgba(2,8,23,.06);
+    padding: 12px 14px 14px;
+    background:#fff;
+  }
+  :where(.page-unit-tp) .tp-nondoc-selected-title{
+    color: var(--navy2);
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  :where(.page-unit-tp) .tp-nondoc-chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap: 8px;
+  }
+  :where(.page-unit-tp) .tp-nondoc-chip{
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(24,79,97,.22);
+    background:#fff;
+    color: var(--navy2);
+    font-size: 13px;
   }
 </style>
 
@@ -2132,6 +2322,125 @@
       rebuildInputFiles();
       syncUI();
     });
+
+    /* =========================================================
+       E. Dokumen Tidak Dipersyaratkan
+       ========================================================= */
+    const listWrap = document.getElementById('tp-nondoc-list');
+    const jsonInput = document.getElementById('tp-nondoc-json');
+    const chipsWrap = document.getElementById('tp-nondoc-chips');
+    const selectedBox = document.getElementById('tp-nondoc-selected');
+    const btnClear = document.getElementById('tp-nondoc-clear');
+
+    const cleanText = (s) => (s || '').replace(/\s+/g,' ').trim();
+
+    const getDocTitlesFromD = () => {
+      const titles = [];
+      document.querySelectorAll('.tp-acc-item .tp-acc-left').forEach(el => {
+        const text = cleanText(el.textContent);
+        if(text) titles.push(text);
+      });
+      return titles.filter((t, i) => titles.indexOf(t) === i);
+    };
+
+    const state = { selected: new Set() };
+
+    const syncHiddenJson = () => {
+      const arr = Array.from(state.selected);
+      if(jsonInput) jsonInput.value = JSON.stringify(arr);
+    };
+
+    const renderChips = () => {
+      const arr = Array.from(state.selected);
+      if(!chipsWrap || !selectedBox) return;
+
+      chipsWrap.innerHTML = '';
+      if(arr.length === 0){
+        selectedBox.hidden = true;
+        return;
+      }
+      selectedBox.hidden = false;
+
+      arr.forEach(t => {
+        const chip = document.createElement('div');
+        chip.className = 'tp-nondoc-chip';
+        chip.textContent = t;
+        chipsWrap.appendChild(chip);
+      });
+    };
+
+    const toggleItem = (title, checked, itemEl, inputEl) => {
+      if(checked) state.selected.add(title);
+      else state.selected.delete(title);
+
+      if(itemEl) itemEl.classList.toggle('is-checked', checked);
+      if(inputEl) inputEl.checked = checked;
+
+      syncHiddenJson();
+      renderChips();
+    };
+
+    const buildChecklist = () => {
+      if(!listWrap) return;
+
+      const titles = getDocTitlesFromD();
+      listWrap.innerHTML = '';
+
+      titles.forEach((title, idx) => {
+        const id = 'tp_nondoc_' + idx;
+
+        const label = document.createElement('label');
+        label.className = 'tp-nondoc-item';
+
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.name = 'dokumen_tidak_dipersyaratkan[]';
+        input.value = title;
+        input.id = id;
+
+        const box = document.createElement('span');
+        box.className = 'tp-nondoc-check';
+
+        const txt = document.createElement('span');
+        txt.className = 'tp-nondoc-text';
+        txt.textContent = title;
+
+        label.appendChild(input);
+        label.appendChild(box);
+        label.appendChild(txt);
+
+        label.addEventListener('click', (ev) => {
+          if(ev.target && ev.target.tagName === 'A') return;
+          ev.preventDefault();
+
+          const next = !input.checked;
+          toggleItem(title, next, label, input);
+        });
+
+        listWrap.appendChild(label);
+      });
+
+      syncHiddenJson();
+      renderChips();
+    };
+
+    if(btnClear){
+      btnClear.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        state.selected.clear();
+
+        document.querySelectorAll('#tp-nondoc-list .tp-nondoc-item').forEach(item => {
+          item.classList.remove('is-checked');
+          const inp = item.querySelector('input[type="checkbox"]');
+          if(inp) inp.checked = false;
+        });
+
+        syncHiddenJson();
+        renderChips();
+      });
+    }
+
+    buildChecklist();
   });
 </script>
 

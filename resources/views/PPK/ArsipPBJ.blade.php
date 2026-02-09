@@ -18,7 +18,6 @@
   <link rel="stylesheet" href="{{ asset('css/Unit.css') }}">
 </head>
 
-{{-- ✅ Tambah 1 class khusus page ini biar CSS inline bisa di-scope dan gak konflik dengan Unit.css --}}
 <body class="dash-body page-arsip">
 @php
   $unitName = "Fakultas Teknik";
@@ -29,10 +28,22 @@
   // - Jika belum, fallback ke dummy lama (biar halaman tidak pecah)
   // =========================
   if (isset($arsips) && $arsips instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator) {
-    // map data dari controller (judul/metode/status) ke schema lama ($rows)
     $rows = collect($arsips->items())->map(function($item) use ($unitName){
-      // pastikan array
       $r = is_array($item) ? $item : (array) $item;
+
+      // ✅ NOTE KOLOM E (Dokumen Tidak Dipersyaratkan)
+      // - Terima boolean / string dari backend
+      // - Kalau true/1/"ya" -> tampilkan default message
+      // - Kalau string panjang -> tampilkan string itu
+      $rawE = $r["dokumen_tidak_dipersyaratkan"] ?? ($r["kolom_e"] ?? ($r["doc_note"] ?? null));
+      $eVal = is_string($rawE) ? trim($rawE) : $rawE;
+
+      $docNote = null;
+      if ($eVal === true || $eVal === 1 || $eVal === "1" || (is_string($eVal) && in_array(strtolower($eVal), ["ya","iya","true","yes"], true))) {
+        $docNote = "Dokumen pada Kolom E bersifat opsional (tidak dipersyaratkan).";
+      } elseif (is_string($eVal) && $eVal !== "") {
+        $docNote = $eVal; // kalau backend kirim keterangan detail, pakai itu
+      }
 
       return [
         "id" => $r["id"] ?? null,
@@ -45,34 +56,37 @@
         "status_arsip" => $r["status_arsip"] ?? "Publik",
         "status_pekerjaan" => $r["status_pekerjaan"] ?? ($r["status"] ?? "-"),
 
-        // ✅ tambahan field untuk sinkron detail (aman, kalau belum ada tetap fallback nanti)
         "idrup" => $r["idrup"] ?? ($r["id_rup"] ?? null),
         "rekanan" => $r["rekanan"] ?? ($r["nama_rekanan"] ?? null),
         "jenis" => $r["jenis"] ?? ($r["jenis_pengadaan"] ?? null),
         "pagu" => $r["pagu"] ?? ($r["pagu_anggaran"] ?? null),
         "hps" => $r["hps"] ?? null,
+
+        // ✅ tambahan untuk popup (kolom E)
+        "doc_note" => $docNote,
       ];
     })->values()->all();
   } else {
-    // dummy data tabel arsip (nanti backend tinggal ganti)
     $rows = [
       [
         "id" => 1,
         "tahun"=>"2024",
         "unit"=>"Fakultas Teknik",
         "pekerjaan"=>"Pengadaan Laboratorium Komputer Terpadu | RUP-2026-001-FT",
-        "jenis_pbj"=>"Pengadaan Pekerjaan Konstruksi", // (tetap ada di data, tapi kolomnya dihapus)
-        "metode_pbj"=>"Pengadaan Langsung",           // (tetap ada di data, tapi kolom preview dihapus)
+        "jenis_pbj"=>"Pengadaan Pekerjaan Konstruksi",
+        "metode_pbj"=>"Pengadaan Langsung",
         "nilai_kontrak"=>"Rp. 100.866.549.000,00",
         "status_arsip"=>"Publik",
         "status_pekerjaan"=>"Perencanaan",
 
-        // ✅ optional dummy untuk detail (biar kalau mau sync tinggal pakai)
         "idrup" => "2026",
         "rekanan" => "PT Jadi Kaya Bersama",
         "jenis" => "Tender",
         "pagu" => "Rp 500.000.000",
         "hps" => "Rp 480.000.000",
+
+        // ✅ dummy kolom E
+        "doc_note" => "Dokumen pada Kolom E bersifat opsional (tidak dipersyaratkan).",
       ],
       [
         "id" => 2,
@@ -90,6 +104,8 @@
         "jenis" => "Tender",
         "pagu" => "Rp 500.000.000",
         "hps" => "Rp 480.000.000",
+
+        "doc_note" => "Dokumen pada Kolom E bersifat opsional (tidak dipersyaratkan).",
       ],
       [
         "id" => 3,
@@ -107,6 +123,8 @@
         "jenis" => "Tender",
         "pagu" => "Rp 500.000.000",
         "hps" => "Rp 480.000.000",
+
+        "doc_note" => "Dokumen pada Kolom E bersifat opsional (tidak dipersyaratkan).",
       ],
       [
         "id" => 4,
@@ -124,6 +142,9 @@
         "jenis" => "Tender",
         "pagu" => "Rp 500.000.000",
         "hps" => "Rp 480.000.000",
+
+        // contoh: kosongkan kalau tidak ingin tampil di popup
+        "doc_note" => "Dokumen pada Kolom E bersifat opsional (tidak dipersyaratkan).",
       ],
     ];
   }
@@ -131,7 +152,6 @@
   $years = array_values(array_unique(array_map(fn($x) => $x['tahun'], $rows)));
   rsort($years);
 
-  // ✅ UPDATE: unit options untuk filter (dummy / current page)
   $unitOptions = array_values(array_unique(array_map(fn($x) => $x['unit'], $rows)));
   sort($unitOptions);
 @endphp
@@ -165,9 +185,14 @@
         <span class="ic"><i class="bi bi-plus-square"></i></span>
         Tambah Pengadaan
       </a>
+
+      <a class="dash-link {{ request()->routeIs('ppk.kelola.akun') ? 'active' : '' }}" href="{{ route('ppk.kelola.akun') }}">
+  <span class="ic"><i class="bi bi-person-gear"></i></span>
+  Kelola Akun
+</a>
+
     </nav>
 
-    {{-- tombol bawah --}}
     <div class="dash-side-actions">
       <a class="dash-side-btn" href="{{ url('/ppk/dashboard') }}">
         <i class="bi bi-house-door"></i>
@@ -189,7 +214,6 @@
         <p>Kelola arsip pengadaan barang dan jasa Universitas Jenderal Soedirman</p>
       </div>
 
-      {{-- ✅ NEW: Tombol Cetak Arsip (kanan atas) --}}
       <div class="ap-header-right">
         <button type="button" id="apPrintBtn" class="ap-print-btn" title="Cetak Arsip">
           <i class="bi bi-printer"></i>
@@ -206,7 +230,6 @@
           <input id="apSearchInput" type="text" placeholder="Cari..." />
         </div>
 
-        {{-- ✅ UPDATE: FILTER UNIT (di kanan search) --}}
         <div class="ap-select">
           <select id="apUnitFilter">
             <option value="Semua">Semua Unit</option>
@@ -259,27 +282,19 @@
           <input id="apSelectAll" type="checkbox" aria-label="Pilih semua" />
         </div>
 
-        {{-- Tahun = center --}}
         <div class="ap-col-center">Tahun</div>
-
-        {{-- Unit Kerja = kiri --}}
         <div class="ap-col-left">Unit Kerja</div>
-
-        {{-- Nama Pekerjaan = kiri --}}
         <div class="ap-col-left">Nama Pekerjaan</div>
 
-        {{-- ✅ Metode PBJ dihapus dari preview --}}
+        <div class="ap-col-center ap-nilai-sort">
+          <span>Nilai Kontrak</span>
+          <button type="button" id="sortNilaiBtn" class="ap-sort-btn" title="Urutkan Nilai Kontrak">
+            <i id="sortNilaiIcon" class="bi bi-sort-down-alt"></i>
+          </button>
+        </div>
 
-        {{-- Nilai Kontrak = center --}}
-        <div class="ap-col-center">Nilai Kontrak</div>
-
-        {{-- Status Arsip = center --}}
         <div class="ap-col-center">Status Arsip</div>
-
-        {{-- Status Pekerjaan = center --}}
         <div class="ap-col-center">Status Pekerjaan</div>
-
-        {{-- Aksi = center --}}
         <div class="ap-col-center" style="text-align:center;">Aksi</div>
       </div>
 
@@ -305,25 +320,17 @@
             <input class="ap-row-check" type="checkbox" value="{{ $r['id'] }}" aria-label="Pilih baris" />
           </div>
 
-          {{-- Tahun = center --}}
           <div class="ap-year ap-col-center">{{ $r['tahun'] }}</div>
-
-          {{-- Unit Kerja = kiri --}}
           <div class="ap-unit ap-col-left">{{ $r['unit'] }}</div>
 
-          {{-- Nama Pekerjaan = kiri --}}
           <div class="ap-job ap-col-left">
             {{ $r['pekerjaan'] }}
           </div>
 
-          {{-- ✅ Metode PBJ dihapus dari preview --}}
-
-          {{-- Nilai Kontrak = center --}}
           <div class="ap-col-center">
             <span class="ap-money">{{ $r['nilai_kontrak'] }}</span>
           </div>
 
-          {{-- Status Arsip = center --}}
           <div class="ap-arsip ap-col-center ap-arsip-center">
             @if($r['status_arsip'] === 'Publik')
               <span class="ap-eye ap-eye-pub"><i class="bi bi-eye"></i> Publik</span>
@@ -332,12 +339,10 @@
             @endif
           </div>
 
-          {{-- Status Pekerjaan = center --}}
           <div class="ap-col-center">
             <span class="{{ $spClass }}">{{ $r['status_pekerjaan'] }}</span>
           </div>
 
-          {{-- Aksi = center --}}
           <div class="ap-aksi ap-col-center">
             <a href="#"
               class="ap-detail js-open-detail"
@@ -351,12 +356,14 @@
               data-pagu="{{ $r['pagu'] ?? 'Rp 500.000.000' }}"
               data-hps="{{ $r['hps'] ?? 'Rp 480.000.000' }}"
               data-kontrak="{{ $r['nilai_kontrak'] }}"
+              {{-- ✅ CONNECT KOLOM E KE POPUP --}}
+              data-docnote="{{ $r['doc_note'] ?? '' }}"
             >Detail</a>
           </div>
         </div>
       @endforeach
 
-      {{-- ✅ ADD: PAGINATION (di bawah tabel) --}}
+      {{-- PAGINATION --}}
       @if(isset($arsips) && $arsips instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
         <div class="ap-pagination-wrap">
           <div class="ap-page-info">
@@ -365,7 +372,6 @@
           </div>
 
           <div class="ap-pagination">
-            {{-- Prev --}}
             <a class="ap-page-btn {{ $arsips->onFirstPage() ? 'is-disabled' : '' }}"
                href="{{ $arsips->onFirstPage() ? '#' : $arsips->previousPageUrl() }}"
                aria-disabled="{{ $arsips->onFirstPage() ? 'true' : 'false' }}">
@@ -400,7 +406,6 @@
               <a class="ap-page-btn" href="{{ $arsips->url($last) }}">{{ $last }}</a>
             @endif
 
-            {{-- Next --}}
             <a class="ap-page-btn {{ $arsips->hasMorePages() ? '' : 'is-disabled' }}"
                href="{{ $arsips->hasMorePages() ? $arsips->nextPageUrl() : '#' }}"
                aria-disabled="{{ $arsips->hasMorePages() ? 'false' : 'true' }}">
@@ -409,7 +414,6 @@
           </div>
         </div>
       @endif
-      {{-- ✅ END PAGINATION --}}
 
     </section>
   </main>
@@ -427,7 +431,6 @@
 
       <div class="dt-title" id="dtTitle">-</div>
 
-      {{-- (modal content kamu tetap) --}}
       <div class="dt-info-grid">
         <div class="dt-info">
           <div class="dt-ic"><i class="bi bi-envelope"></i></div>
@@ -541,6 +544,15 @@
         </div>
       </div>
 
+      {{-- ✅✅ TAMBAHAN (KOLOM E) — TARUH DI BAWAH LIST DOKUMEN --}}
+      <div class="dt-doc-note" id="dtDocNoteWrap" hidden>
+        <div class="dt-doc-note-ic"><i class="bi bi-info-circle"></i></div>
+        <div class="dt-doc-note-txt">
+          <div class="dt-doc-note-title">Dokumen tidak dipersyaratkan</div>
+          <div class="dt-doc-note-desc" id="dtDocNote">-</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -551,32 +563,26 @@
      - Semua rules di-scope ke .page-arsip
   ========================================================= */
 
-  /* === BASE FONT khusus halaman ini === */
   body.page-arsip.dash-body{
     font-size: 18px;
     line-height: 1.6;
   }
 
-  /* ====== token khusus halaman ini (jangan pakai :root global) ====== */
   .page-arsip{
     --ap-field-h: 46px;
     --ap-field-r: 12px;
     --ap-field-px: 12px;
 
-    /* Status Pekerjaan pill */
     --ap-sp-h: 34px;
     --ap-sp-w: 124px;
     --ap-sp-r: 8px;
 
-    /* garis pemisah row */
     --ap-row-divider: 2px;
 
-    /* ✅ Unsoed Yellow */
     --unsoed-yellow: #f6c100;
     --unsoed-yellow-dark: #d9aa00;
   }
 
-  /* ✅ HEADER: bikin kanan-kiri (judul + tombol cetak) */
   .page-arsip .ap-header{
     display:flex;
     align-items:flex-start;
@@ -591,7 +597,6 @@
     justify-content:flex-end;
   }
 
-  /* ✅ Tombol Cetak Arsip (kuning Unsoed) */
   .page-arsip .ap-print-btn{
     height: 42px;
     padding: 0 14px;
@@ -615,28 +620,24 @@
     background: var(--unsoed-yellow-dark);
     transform: translateY(-1px);
   }
-  .page-arsip .ap-print-btn:active{
-    transform: translateY(0);
-  }
+  .page-arsip .ap-print-btn:active{ transform: translateY(0); }
   .page-arsip .ap-print-btn i{
     font-size: 16px;
     line-height: 1;
     display:block;
   }
 
-  /* ===== FILTER BAR ===== */
   .page-arsip .ap-filter-row{
     display:flex;
     gap:12px;
     align-items:center;
-    flex-wrap:nowrap; /* ✅ supaya muat 1 baris */
+    flex-wrap:nowrap;
   }
 
-  /* ✅ Search dipersempit biar muat + tetap rapi */
   .page-arsip .ap-search{
     position: relative;
     flex: 1 1 auto;
-    min-width: 220px; /* lebih kecil dari sebelumnya */
+    min-width: 220px;
     height: var(--ap-field-h);
     display:flex;
     align-items:center;
@@ -661,7 +662,7 @@
 
   .page-arsip .ap-select{
     position: relative;
-    flex: 0 0 200px; /* ✅ dipersempit dikit */
+    flex: 0 0 200px;
     min-width: 200px;
     height: var(--ap-field-h);
     display:flex;
@@ -704,30 +705,18 @@
     display:block;
   }
 
-  /* =========================
-     TABLE: kolom sudah disesuaikan (Metode PBJ dihapus)
-     Urutan:
-     1 checkbox
-     2 Tahun
-     3 Unit Kerja
-     4 Nama Pekerjaan
-     5 Nilai Kontrak
-     6 Status Arsip
-     7 Status Pekerjaan
-     8 Aksi
-  ========================= */
   .page-arsip .ap-head,
   .page-arsip .ap-row{
     display:grid;
     grid-template-columns:
-      44px   /* checkbox */
-      86px   /* tahun */
-      1.25fr /* unit kerja */
-      2.45fr /* nama pekerjaan */
-      1.55fr /* nilai kontrak */
-      1.10fr /* status arsip */
-      1.25fr /* status pekerjaan */
-      90px;  /* aksi */
+      44px
+      86px
+      1.25fr
+      2.45fr
+      1.55fr
+      1.10fr
+      1.25fr
+      90px;
     column-gap: 18px;
     padding-left: 18px;
     padding-right: 18px;
@@ -735,7 +724,6 @@
     align-items:center;
   }
 
-  /* default: kiri */
   .page-arsip .ap-head > div,
   .page-arsip .ap-row > div{
     text-align:left;
@@ -743,32 +731,55 @@
     min-width: 0;
   }
 
-  /* helper kiri */
   .page-arsip .ap-col-left{
     text-align:left !important;
     justify-self:start !important;
   }
-
-  /* helper center */
   .page-arsip .ap-col-center{
     text-align:center !important;
     justify-self:center !important;
   }
 
-  /* status arsip center */
+  .page-arsip .ap-nilai-sort{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+  }
+
+  .page-arsip .ap-sort-btn{
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition: .15s ease;
+    padding: 0;
+    line-height: 1;
+  }
+  .page-arsip .ap-sort-btn:hover{ background: transparent; }
+  .page-arsip .ap-sort-btn i{
+    font-size: 20px;
+    line-height: 1;
+    display:block;
+    color:#fff !important;
+  }
+
   .page-arsip .ap-arsip-center{
     display:flex;
     justify-content:center;
     align-items:center;
   }
 
-  /* Nama pekerjaan wrap enak */
   .page-arsip .ap-job{
     line-height: 1.35;
     overflow-wrap: anywhere;
   }
 
-  /* Nilai Kontrak: center + tidak pecah */
   .page-arsip .ap-money{
     display:inline-block;
     color: var(--navy2);
@@ -777,14 +788,10 @@
     line-height: 1.2;
   }
 
-  /* garis pemisah antar arsip */
   .page-arsip .ap-row{
     border-top: var(--ap-row-divider) solid #eef3f6;
   }
 
-  /* =========================
-     STATUS PEKERJAAN
-  ========================= */
   .page-arsip .ap-sp{
     display:inline-flex;
     align-items:center;
@@ -804,11 +811,8 @@
   .page-arsip .ap-sp-done{   background:#BFE9BF; }
 
   .page-arsip .ap-eye,
-  .page-arsip .ap-detail{
-    font-size: 15.5px;
-  }
+  .page-arsip .ap-detail{ font-size: 15.5px; }
 
-  /* MODAL: teks modal */
   .page-arsip .dt-title{ font-size: 20px; }
   .page-arsip .dt-label{ font-size: 15px; }
   .page-arsip .dt-val{ font-size: 16px; }
@@ -823,8 +827,70 @@
     pointer-events: auto;
   }
 
-  /* ===== FIX: tombol silang (X) center di kotak ===== */
+  /* =========================
+     POPUP (tetap)
+  ========================= */
+  .page-arsip .dt-modal{
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+  }
+  .page-arsip .dt-modal.is-open{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .page-arsip .dt-backdrop{
+    position: fixed;
+    inset: 0;
+  }
+
+  .page-arsip .dt-panel{
+    width: min(1440px, 98vw) !important;
+    max-height: calc(100vh - 12px) !important;
+    display: flex;
+    position: relative;
+    z-index: 1;
+
+    border-radius: 24px !important;
+    overflow: hidden;
+  }
+
+  .page-arsip .dt-card{
+    width: 100%;
+    display: block;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
+
+    border-radius: 24px !important;
+    background: #fff;
+  }
+
+  .page-arsip .dt-card::-webkit-scrollbar{ width: 10px; }
+  .page-arsip .dt-card::-webkit-scrollbar-track{
+    border-radius: 24px;
+    background: transparent;
+    margin: 10px 0;
+  }
+  .page-arsip .dt-card::-webkit-scrollbar-thumb{
+    border-radius: 24px;
+    background: rgba(15, 23, 42, .18);
+  }
+
   .page-arsip .dt-close-inside{
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    border-radius: 16px;
     display:grid;
     place-items:center;
     padding:0;
@@ -833,12 +899,55 @@
     display:block;
     line-height: 1;
     font-size: 18px;
-    transform: translateY(0);
   }
 
-  /* =========================
-     ✅ PAGINATION (SCOPED)
-  ========================= */
+  .page-arsip .dt-title{
+    position: static;
+    background: transparent;
+  }
+
+  /* ✅✅ NOTE KOLOM E (TAMPIL DI BAWAH DOKUMEN) */
+  .page-arsip .dt-doc-note{
+    margin-top: 14px;
+    border: 1px solid #e8eef3;
+    background: #f8fbfd;
+    border-radius: 16px;
+    padding: 12px 14px;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .page-arsip .dt-doc-note-ic{
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    display:grid;
+    place-items:center;
+    background: #ffffff;
+    border: 1px solid #e8eef3;
+    flex: 0 0 auto;
+  }
+  .page-arsip .dt-doc-note-ic i{
+    font-size: 18px;
+    line-height: 1;
+    display:block;
+    opacity: .9;
+  }
+  .page-arsip .dt-doc-note-title{
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    color: #0f172a;
+  }
+  .page-arsip .dt-doc-note-desc{
+    font-size: 13.5px;
+    color: #475569;
+    line-height: 1.5;
+  }
+
+  /* =========================================================
+     BAGIAN BAWAH: pagination + print (tetap)
+  ========================================================= */
   .page-arsip .ap-pagination-wrap{
     display:flex;
     align-items:center;
@@ -905,7 +1014,6 @@
     padding: 0 4px;
   }
 
-  /* ✅ RESPONSIVE: kalau layar sempit, boleh turun baris biar gak rusak */
   @media (max-width: 1100px){
     .page-arsip .ap-filter-row{ flex-wrap: wrap; }
     .page-arsip .ap-search{ flex: 1 1 320px; min-width: 260px; }
@@ -914,11 +1022,8 @@
       flex-direction: column;
       align-items: flex-start;
     }
-    .page-arsip .ap-pagination{
-      justify-content:flex-start;
-    }
+    .page-arsip .ap-pagination{ justify-content:flex-start; }
 
-    /* ✅ tombol cetak biar gak nabrak (turun di bawah header) */
     .page-arsip .ap-header{
       flex-direction: column;
       align-items: flex-start;
@@ -929,12 +1034,7 @@
     }
   }
 
-  /* =========================
-     ✅ PRINT STYLE
-     - sidebar/filter/tombol/tools/modal disembunyikan saat print
-  ========================= */
   @media print{
-    /* sembunyikan elemen yang tidak perlu */
     .dash-sidebar,
     .ap-filter,
     .ap-tools,
@@ -947,23 +1047,12 @@
       display:none !important;
     }
 
-    /* main jadi full */
-    .dash-main{
-      width: 100% !important;
-    }
-    .dash-wrap{
-      display:block !important;
-    }
+    .dash-main{ width: 100% !important; }
+    .dash-wrap{ display:block !important; }
 
-    /* rapihin spacing untuk kertas */
-    body{
-      background:#fff !important;
-    }
-    .dash-table{
-      box-shadow:none !important;
-    }
+    body{ background:#fff !important; }
+    .dash-table{ box-shadow:none !important; }
 
-    /* grid kolom saat print: hilangkan checkbox & aksi */
     .page-arsip .ap-head,
     .page-arsip .ap-row{
       grid-template-columns:
@@ -983,16 +1072,14 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const selectAll = document.getElementById('apSelectAll');
-  const unitEl    = document.getElementById('apUnitFilter');   // ✅ NEW
+  const unitEl    = document.getElementById('apUnitFilter');
   const filterEl  = document.getElementById('apStatusFilter');
   const yearEl    = document.getElementById('apYearFilter');
   const searchEl  = document.getElementById('apSearchInput');
 
   const refreshBtn = document.getElementById('apRefreshBtn');
   const deleteBtn  = document.getElementById('apDeleteBtn');
-
-  // ✅ NEW: Print button
-  const printBtn = document.getElementById('apPrintBtn');
+  const printBtn   = document.getElementById('apPrintBtn');
 
   const getRows = () => Array.from(document.querySelectorAll('.ap-row'));
   const getVisibleRows = () => getRows().filter(r => r.style.display !== 'none');
@@ -1068,7 +1155,7 @@ document.addEventListener('DOMContentLoaded', function () {
     updateDeleteState();
   }
 
-  if (unitEl)  unitEl.addEventListener('change', applyFilters); // ✅ NEW
+  if (unitEl)  unitEl.addEventListener('change', applyFilters);
   if (filterEl) filterEl.addEventListener('change', applyFilters);
   if (yearEl)   yearEl.addEventListener('change', applyFilters);
   if (searchEl) searchEl.addEventListener('input', applyFilters);
@@ -1145,10 +1232,8 @@ document.addEventListener('DOMContentLoaded', function () {
   updateEditState();
   updateDeleteState();
 
-  // ✅ NEW: Cetak Arsip
   if(printBtn){
     printBtn.addEventListener('click', function(){
-      // pastikan modal ketutup kalau lagi kebuka
       const modal = document.getElementById('dtModal');
       if(modal && modal.classList.contains('is-open')){
         modal.classList.remove('is-open');
@@ -1160,7 +1245,52 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // MODAL DETAIL (tetap)
+  // =========================
+  // SORT NILAI KONTRAK
+  // =========================
+  const btn   = document.getElementById('sortNilaiBtn');
+  const icon  = document.getElementById('sortNilaiIcon');
+  const table = document.querySelector('.ap-table');
+
+  if (btn && icon && table) {
+    let direction = 'desc';
+
+    function parseRupiah(text){
+      return parseInt((text || '').replace(/[^\d]/g, '')) || 0;
+    }
+
+    btn.addEventListener('click', () => {
+      const rows = Array.from(table.querySelectorAll('.ap-row'));
+      const pagination = table.querySelector('.ap-pagination-wrap');
+
+      rows.sort((a, b) => {
+        const aMoneyEl = a.querySelector('.ap-money');
+        const bMoneyEl = b.querySelector('.ap-money');
+        const aVal = parseRupiah(aMoneyEl ? aMoneyEl.innerText : '');
+        const bVal = parseRupiah(bMoneyEl ? bMoneyEl.innerText : '');
+        return direction === 'desc' ? bVal - aVal : aVal - bVal;
+      });
+
+      rows.forEach(row => {
+        if (pagination) table.insertBefore(row, pagination);
+        else table.appendChild(row);
+      });
+
+      if(direction === 'desc'){
+        direction = 'asc';
+        icon.className = 'bi bi-sort-up';
+      }else{
+        direction = 'desc';
+        icon.className = 'bi bi-sort-down-alt';
+      }
+
+      syncSelectAllState();
+      updateEditState();
+      updateDeleteState();
+    });
+  }
+
+  // MODAL DETAIL
   const modal = document.getElementById('dtModal');
   const closeBtn = document.getElementById('dtCloseBtn');
 
@@ -1175,6 +1305,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const elHps     = document.getElementById('dtHps');
   const elKontrak = document.getElementById('dtKontrak');
 
+  // ✅ KOLOM E (note)
+  const elDocNoteWrap = document.getElementById('dtDocNoteWrap');
+  const elDocNote     = document.getElementById('dtDocNote');
+
   function openModal(payload){
     if(!modal) return;
 
@@ -1188,6 +1322,18 @@ document.addEventListener('DOMContentLoaded', function () {
     if(elPagu)    elPagu.textContent    = payload.pagu || '-';
     if(elHps)     elHps.textContent     = payload.hps || '-';
     if(elKontrak) elKontrak.textContent = payload.kontrak || '-';
+
+    // ✅ set note kolom E
+    if(elDocNoteWrap && elDocNote){
+      const note = (payload.docnote || '').trim();
+      if(note){
+        elDocNote.textContent = note;
+        elDocNoteWrap.hidden = false;
+      }else{
+        elDocNote.textContent = '-';
+        elDocNoteWrap.hidden = true;
+      }
+    }
 
     modal.classList.add('is-open');
     document.body.classList.add('modal-open');
@@ -1218,7 +1364,10 @@ document.addEventListener('DOMContentLoaded', function () {
       jenis: link.dataset.jenis,
       pagu: link.dataset.pagu,
       hps: link.dataset.hps,
-      kontrak: link.dataset.kontrak
+      kontrak: link.dataset.kontrak,
+
+      // ✅ ambil kolom E dari data-attribute
+      docnote: link.dataset.docnote
     });
   });
 

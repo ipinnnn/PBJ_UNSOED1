@@ -46,6 +46,14 @@ Route::prefix('unit')
 
         Route::post('/pengadaan/store', [UnitController::class, 'pengadaanStore'])
             ->name('pengadaan.store');
+
+        // ✅ ====== KELOLA AKUN (UNIT) ======
+        Route::get('/kelola-akun', [UnitController::class, 'kelolaAkun'])
+            ->name('kelola.akun');
+
+        // ✅ SIMPAN PERUBAHAN AKUN (UNIT)
+        Route::put('/akun', [UnitController::class, 'updateAkun'])
+            ->name('akun.update');
     });
 
 /*
@@ -68,7 +76,6 @@ Route::prefix('ppk')
         Route::get('/arsip/{id}/edit', [PpkController::class, 'arsipEdit'])
             ->name('arsip.edit');
 
-        // UPDATE arsip (redirect balik ke index harus di controller: return redirect()->route('ppk.arsip'))
         Route::put('/arsip/{id}', [PpkController::class, 'arsipUpdate'])
             ->name('arsip.update');
 
@@ -78,4 +85,12 @@ Route::prefix('ppk')
 
         Route::post('/pengadaan/store', [PpkController::class, 'pengadaanStore'])
             ->name('pengadaan.store');
+
+        // ✅ ====== KELOLA AKUN (PPK) ======
+        Route::get('/kelola-akun', [PpkController::class, 'kelolaAkun'])
+            ->name('kelola.akun');
+
+        // ✅ SIMPAN PERUBAHAN AKUN (PPK)
+        Route::put('/akun', [PpkController::class, 'updateAkun'])
+            ->name('akun.update');
     });

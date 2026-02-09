@@ -78,6 +78,31 @@
     return [];
   };
 
+  // ✅ helper parse list string/json/array (buat Kolom E)
+  $parseList = function($raw){
+    if(!$raw) return [];
+    if(is_array($raw)) return array_values(array_filter($raw));
+    if(is_string($raw)){
+      $trim = trim($raw);
+      if(strlen($trim) && ($trim[0] === '[' || $trim[0] === '{')){
+        $decoded = json_decode($trim, true);
+        if(is_array($decoded)){
+          if(array_keys($decoded) !== range(0, count($decoded)-1)){
+            $decoded = array_values($decoded);
+          }
+          return array_values(array_filter($decoded));
+        }
+      }
+      // fallback: kalau dipisah koma
+      if(strpos($trim, ',') !== false){
+        $arr = array_map('trim', explode(',', $trim));
+        return array_values(array_filter($arr));
+      }
+      return [$trim];
+    }
+    return [];
+  };
+
   $baseName = function($path){
     if(!$path) return '';
     return basename($path);
@@ -126,6 +151,14 @@
     ['key'=>'bast_akhir','label'=>'Berita Acara Serah Terima Final atau BAST Final'],
     ['key'=>'dokumen_pendukung_lainya','label'=>'Dokumen Pendukung Lainya'],
   ];
+
+  // ✅ nilai awal Kolom E (kalau ada data lama / old())
+  // prioritas: old array -> field arsip -> fallback null
+  $eSelectedRaw = old('dokumen_tidak_dipersyaratkan');
+  if($eSelectedRaw === null){
+    $eSelectedRaw = $val('dokumen_tidak_dipersyaratkan', ['dokumen_tidak_dipersyaratkan']) ?? ($arsip ? $get($arsip,'dokumen_tidak_dipersyaratkan') : null);
+  }
+  $eSelected = $parseList($eSelectedRaw);
 @endphp
 
 <div class="dash-wrap">
@@ -157,6 +190,12 @@
         <span class="ic"><i class="bi bi-plus-square"></i></span>
         Tambah Pengadaan
       </a>
+
+      <a class="dash-link {{ request()->routeIs('ppk.kelola.akun') ? 'active' : '' }}" href="{{ route('ppk.kelola.akun') }}">
+  <span class="ic"><i class="bi bi-person-gear"></i></span>
+  Kelola Akun
+</a>
+
     </nav>
 
     <div class="dash-side-actions">
@@ -177,7 +216,6 @@
     <header class="dash-header">
       {{-- ✅ tombol kembali DI ATAS PAGE (header) --}}
       <div class="tp-header-actions">
-        {{-- ✅ FIT SESUAI TEKS (bukan tp-btn-same) --}}
         <a href="{{ url('/ppk/arsip') }}" class="tp-btn tp-btn-ghost tp-btn-fit">
           <i class="bi bi-arrow-left"></i>
           Kembali
@@ -436,6 +474,53 @@
         </div>
       </section>
 
+      {{-- ✅ E. Dokumen Tidak Dipersyaratkan (COPY SAMA PERSIS DARI TAMBAH PENGADAAN) --}}
+      <section class="dash-table tp-cardbox" style="border-radius:14px; overflow:visible; margin-bottom:14px;">
+        <div style="padding:18px 18px 16px;">
+          <div class="tp-section">
+            <div class="tp-section-title">
+              <span>E. Dokumen Tidak Dipersyaratkan</span>
+            </div>
+            <div class="tp-divider"></div>
+
+            <div class="tp-help" style="margin:0 6px 14px;">
+              Centang dokumen yang <b>tidak dipersyaratkan</b>. List ini otomatis mengambil nama dokumen dari kolom D.
+            </div>
+
+            {{-- Hidden (untuk kebutuhan popup detail / backend) --}}
+            <input type="hidden" name="dokumen_tidak_dipersyaratkan_json" id="tp-nondoc-json" value="[]">
+
+            {{-- ✅ simpan preselect dari backend (edit mode) --}}
+            <input type="hidden" id="tp-nondoc-preselect" value='@json($eSelected)'>
+
+            <div class="tp-nondoc-wrap">
+              <div class="tp-nondoc-head">
+                <div class="tp-nondoc-title">
+                  <i class="bi bi-check2-square"></i>
+                  Pilih Dokumen
+                </div>
+                <div class="tp-nondoc-actions">
+                  <button type="button" class="tp-nondoc-btn" id="tp-nondoc-clear">
+                    <i class="bi bi-x-circle"></i>
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <div class="tp-nondoc-box" id="tp-nondoc-list">
+                {{-- di-inject oleh JS --}}
+              </div>
+
+              <div class="tp-nondoc-selected" id="tp-nondoc-selected" hidden>
+                <div class="tp-nondoc-selected-title">Terpilih</div>
+                <div class="tp-nondoc-chips" id="tp-nondoc-chips"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {{-- ✅ BAWAH: kiri Hapus Perubahan, kanan Simpan Perubahan --}}
       <div class="tp-actions tp-actions-split">
         <button type="button" class="tp-btn tp-btn-danger tp-btn-same" id="btnResetChanges">
@@ -504,8 +589,16 @@
     margin-bottom: 5px;
   }
 
+  /* ✅ FIT untuk tombol Kembali di header (lebar ngikut teks) */
+  .tp-btn-fit{
+    min-width: 0 !important;
+    width: auto !important;
+    height: 46px;
+    padding: 12px 16px;
+  }
+
   /* =============================
-     JUDUL A/B/C/D: BG DIHILANGIN
+     JUDUL A/B/C/D/E: BG DIHILANGIN
   ============================= */
   .tp-section-title{
     display:flex;
@@ -623,15 +716,7 @@
   .tp-btn i{ font-size: 18px; }
 
   .tp-btn-same{
-    min-width: 210px;     /* ✅ bikin sama panjang (untuk tombol bawah) */
-    height: 46px;         /* ✅ bikin sama tinggi */
-    padding: 12px 16px;   /* tetap konsisten */
-  }
-
-  /* ✅ FIT untuk tombol Kembali di header (lebar ngikut teks) */
-  .tp-btn-fit{
-    min-width: 0 !important;
-    width: auto !important;
+    min-width: 210px;
     height: 46px;
     padding: 12px 16px;
   }
@@ -723,22 +808,6 @@
     box-shadow: 0 12px 20px rgba(2,8,23,.07);
   }
 
-  .tp-acc-head{
-    width:100%;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap: 12px;
-    padding: 12px 14px;
-    border: 0;
-    background: #dff1ff;
-    cursor:pointer;
-    font-family: inherit;
-    color: var(--navy2);
-    font-size: 16px;
-    transition: background .18s ease, color .18s ease;
-  }
-
   .tp-acc-count{
     font-size: 13px;
     opacity: .78;
@@ -757,6 +826,22 @@
   }
   .tp-acc-item.has-file .tp-acc-left i{ color:#fff; opacity:.95; }
   .tp-acc-item.has-file .tp-acc-ic{ color:#fff; opacity:.95; }
+
+  .tp-acc-head{
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 0;
+    background: #dff1ff;
+    cursor:pointer;
+    font-family: inherit;
+    color: var(--navy2);
+    font-size: 16px;
+    transition: background .18s ease, color .18s ease;
+  }
 
   .tp-acc-left{ display:flex; align-items:center; gap: 10px; min-width: 0; }
   .tp-acc-left i{ font-size: 18px; }
@@ -896,6 +981,142 @@
     font-size: 15px;
     color: #64748b;
   }
+
+  /* =============================
+     ✅ KOLOM E (SAMA PERSIS DARI TAMBAH PENGADAAN)
+  ============================= */
+  .tp-nondoc-wrap{
+    border: 1px solid #eef3f6;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 10px 18px rgba(2,8,23,.05);
+    overflow: hidden;
+  }
+  .tp-nondoc-head{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #dff1ff;
+    color: var(--navy2);
+    border-bottom: 1px solid #eef3f6;
+  }
+  .tp-nondoc-title{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    font-size: 16px;
+    color: var(--navy2);
+  }
+  .tp-nondoc-title i{ font-size: 18px; }
+  .tp-nondoc-actions{ display:flex; align-items:center; gap: 10px; }
+  .tp-nondoc-btn{
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    border: 1px solid rgba(2,8,23,.10);
+    background:#fff;
+    color: var(--navy2);
+    padding: 10px 12px;
+    border-radius: 12px;
+    cursor:pointer;
+    font-family: inherit;
+    font-size: 14px;
+    transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+  }
+  .tp-nondoc-btn:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 12px 18px rgba(2,8,23,.08);
+    border-color: rgba(24,79,97,.35);
+  }
+
+  .tp-nondoc-box{
+    padding: 14px;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-height: 380px;
+    overflow:auto;
+  }
+  @media(max-width:900px){
+    .tp-nondoc-box{ grid-template-columns: 1fr; }
+  }
+
+  .tp-nondoc-item{
+    display:flex;
+    align-items:flex-start;
+    gap: 10px;
+    border: 1px solid rgba(2,8,23,.08);
+    border-radius: 14px;
+    padding: 12px 12px;
+    background:#fff;
+    cursor:pointer;
+    user-select:none;
+    transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+  }
+  .tp-nondoc-item:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 12px 18px rgba(2,8,23,.08);
+    border-color: rgba(24,79,97,.35);
+  }
+  .tp-nondoc-item input{ display:none; }
+  .tp-nondoc-check{
+    width: 18px;
+    height: 18px;
+    border-radius: 6px;
+    border: 2px solid var(--navy2);
+    flex: 0 0 auto;
+    margin-top: 1px;
+    position: relative;
+  }
+  .tp-nondoc-text{
+    font-size: 15px;
+    color: #0f172a;
+    line-height: 1.35;
+  }
+  .tp-nondoc-item.is-checked{
+    background: rgba(24,79,97,.08);
+    border-color: rgba(24,79,97,.35);
+  }
+  .tp-nondoc-item.is-checked .tp-nondoc-check::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:50%;
+    width: 9px;
+    height: 9px;
+    transform: translate(-50%, -50%);
+    border-radius: 3px;
+    background: var(--navy2);
+  }
+
+  .tp-nondoc-selected{
+    border-top: 1px solid rgba(2,8,23,.06);
+    padding: 12px 14px 14px;
+    background:#fff;
+  }
+  .tp-nondoc-selected-title{
+    color: var(--navy2);
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  .tp-nondoc-chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap: 8px;
+  }
+  .tp-nondoc-chip{
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(24,79,97,.22);
+    background:#fff;
+    color: var(--navy2);
+    font-size: 13px;
+  }
 </style>
 
 <script>
@@ -915,10 +1136,9 @@
   });
 
   document.addEventListener('DOMContentLoaded', function(){
-    // ✅ Hapus Perubahan: balikin kondisi awal (paling aman untuk upload/preview)
-    const resetNow = () => window.location.reload();
+    // ✅ Hapus Perubahan: reload
     const resetBtn = document.getElementById('btnResetChanges');
-    if(resetBtn) resetBtn.addEventListener('click', resetNow);
+    if(resetBtn) resetBtn.addEventListener('click', () => window.location.reload());
 
     // set active sesuai checked
     document.querySelectorAll('.tp-radio-wrap').forEach(wrap => {
@@ -1181,6 +1401,137 @@
       rebuildInputFiles();
       syncUI();
     });
+
+    /* =========================================================
+       ✅ E. Dokumen Tidak Dipersyaratkan (SAMA PERSIS)
+       + EDIT MODE: preselect dari backend
+       ========================================================= */
+    const listWrap = document.getElementById('tp-nondoc-list');
+    const jsonInput = document.getElementById('tp-nondoc-json');
+    const chipsWrap = document.getElementById('tp-nondoc-chips');
+    const selectedBox = document.getElementById('tp-nondoc-selected');
+    const btnClear = document.getElementById('tp-nondoc-clear');
+
+    const preselectEl = document.getElementById('tp-nondoc-preselect');
+    let preselect = [];
+    try{
+      preselect = preselectEl ? JSON.parse(preselectEl.value || '[]') : [];
+      if(!Array.isArray(preselect)) preselect = [];
+    }catch(e){ preselect = []; }
+
+    const cleanText = (s) => (s || '').replace(/\s+/g,' ').trim();
+
+    const getDocTitlesFromD = () => {
+      const titles = [];
+      document.querySelectorAll('.tp-acc-item .tp-acc-left').forEach(el => {
+        const text = cleanText(el.textContent);
+        if(text) titles.push(text);
+      });
+      return titles.filter((t, i) => titles.indexOf(t) === i);
+    };
+
+    const state = { selected: new Set() };
+
+    const syncHiddenJson = () => {
+      const arr = Array.from(state.selected);
+      if(jsonInput) jsonInput.value = JSON.stringify(arr);
+    };
+
+    const renderChips = () => {
+      const arr = Array.from(state.selected);
+      if(!chipsWrap || !selectedBox) return;
+
+      chipsWrap.innerHTML = '';
+      if(arr.length === 0){
+        selectedBox.hidden = true;
+        return;
+      }
+      selectedBox.hidden = false;
+
+      arr.forEach(t => {
+        const chip = document.createElement('div');
+        chip.className = 'tp-nondoc-chip';
+        chip.textContent = t;
+        chipsWrap.appendChild(chip);
+      });
+    };
+
+    const toggleItem = (title, checked, itemEl, inputEl) => {
+      if(checked) state.selected.add(title);
+      else state.selected.delete(title);
+
+      if(itemEl) itemEl.classList.toggle('is-checked', checked);
+      if(inputEl) inputEl.checked = checked;
+
+      syncHiddenJson();
+      renderChips();
+    };
+
+    const buildChecklist = () => {
+      if(!listWrap) return;
+
+      const titles = getDocTitlesFromD();
+      listWrap.innerHTML = '';
+
+      titles.forEach((title, idx) => {
+        const label = document.createElement('label');
+        label.className = 'tp-nondoc-item';
+
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.name = 'dokumen_tidak_dipersyaratkan[]';
+        input.value = title;
+
+        const box = document.createElement('span');
+        box.className = 'tp-nondoc-check';
+
+        const txt = document.createElement('span');
+        txt.className = 'tp-nondoc-text';
+        txt.textContent = title;
+
+        label.appendChild(input);
+        label.appendChild(box);
+        label.appendChild(txt);
+
+        // ✅ preselect dari backend
+        if(preselect.includes(title)){
+          state.selected.add(title);
+          label.classList.add('is-checked');
+          input.checked = true;
+        }
+
+        label.addEventListener('click', (ev) => {
+          if(ev.target && ev.target.tagName === 'A') return;
+          ev.preventDefault();
+
+          const next = !input.checked;
+          toggleItem(title, next, label, input);
+        });
+
+        listWrap.appendChild(label);
+      });
+
+      syncHiddenJson();
+      renderChips();
+    };
+
+    if(btnClear){
+      btnClear.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        state.selected.clear();
+
+        document.querySelectorAll('#tp-nondoc-list .tp-nondoc-item').forEach(item => {
+          item.classList.remove('is-checked');
+          const inp = item.querySelector('input[type="checkbox"]');
+          if(inp) inp.checked = false;
+        });
+
+        syncHiddenJson();
+        renderChips();
+      });
+    }
+
+    buildChecklist();
   });
 </script>
 

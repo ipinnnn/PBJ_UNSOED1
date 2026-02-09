@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Hash;
 
 class UnitController extends Controller
 {
@@ -44,7 +45,6 @@ class UnitController extends Controller
                 'status_pekerjaan' => 'Pelaksanaan',
                 'unit' => 'Fakultas Teknik',
             ],
-            // ✅ biar kelihatan pagination, duplikasi dummy jadi banyak item
             [
                 'id' => 3,
                 'pekerjaan' => 'Pengadaan Printer | RUP-2026-003-FT',
@@ -85,12 +85,72 @@ class UnitController extends Controller
                 'status_pekerjaan' => 'Selesai',
                 'unit' => 'Fakultas Teknik',
             ],
+            [
+                'id' => 7,
+                'pekerjaan' => 'Pengadaan Switch Jaringan | RUP-2026-007-FT',
+                'tahun' => 2025,
+                'metode_pbj' => 'Tender',
+                'nilai_kontrak' => 'Rp. 22.000.000,00',
+                'status_arsip' => 'Privat',
+                'status_pekerjaan' => 'Pemilihan',
+                'unit' => 'Fakultas Teknik',
+            ],
+            [
+                'id' => 8,
+                'pekerjaan' => 'Pengadaan CCTV Gedung | RUP-2026-008-FT',
+                'tahun' => 2024,
+                'metode_pbj' => 'Pengadaan Langsung',
+                'nilai_kontrak' => 'Rp. 18.750.000,00',
+                'status_arsip' => 'Publik',
+                'status_pekerjaan' => 'Perencanaan',
+                'unit' => 'Fakultas Teknik',
+            ],
+            [
+                'id' => 9,
+                'pekerjaan' => 'Pengadaan Software CAD | RUP-2026-009-FT',
+                'tahun' => 2025,
+                'metode_pbj' => 'Tender',
+                'nilai_kontrak' => 'Rp. 65.000.000,00',
+                'status_arsip' => 'Publik',
+                'status_pekerjaan' => 'Pelaksanaan',
+                'unit' => 'Fakultas Teknik',
+            ],
+            [
+                'id' => 10,
+                'pekerjaan' => 'Pengadaan Meja Laboratorium | RUP-2026-010-FT',
+                'tahun' => 2024,
+                'metode_pbj' => 'Pengadaan Langsung',
+                'nilai_kontrak' => 'Rp. 12.800.000,00',
+                'status_arsip' => 'Privat',
+                'status_pekerjaan' => 'Selesai',
+                'unit' => 'Fakultas Teknik',
+            ],
+            [
+                'id' => 11,
+                'pekerjaan' => 'Pengadaan Kursi Auditorium | RUP-2026-011-FT',
+                'tahun' => 2025,
+                'metode_pbj' => 'Tender',
+                'nilai_kontrak' => 'Rp. 95.000.000,00',
+                'status_arsip' => 'Publik',
+                'status_pekerjaan' => 'Pemilihan',
+                'unit' => 'Fakultas Teknik',
+            ],
+            [
+                'id' => 12,
+                'pekerjaan' => 'Pengadaan AC Ruang Dosen | RUP-2026-012-FT',
+                'tahun' => 2024,
+                'metode_pbj' => 'E-Purchasing / E-Catalogue',
+                'nilai_kontrak' => 'Rp. 27.500.000,00',
+                'status_arsip' => 'Privat',
+                'status_pekerjaan' => 'Pelaksanaan',
+                'unit' => 'Fakultas Teknik',
+            ],
         ];
 
         // =========================
         // ✅ PAGINATION (DUMMY) - bikin $arsips jadi LengthAwarePaginator
         // =========================
-        $perPage = (int) ($request->get('per_page', 4)); // biar kelihatan pagination
+        $perPage = (int) ($request->get('per_page', 6)); // biar kelihatan pagination
         $page    = (int) ($request->get('page', 1));
 
         $collection = Collection::make($arsipList);
@@ -151,7 +211,69 @@ class UnitController extends Controller
     {
         $unitName = "Fakultas Teknik";
 
-        return view('Unit.TambahPengadaan', compact('unitName'));
+        // ✅ Dummy opsi (biar UNIT sama kaya PPK)
+        $tahunOptions = [2022, 2023, 2024, 2025, 2026];
+        $unitOptions  = ["Fakultas Teknik", "Fakultas Hukum", "Fakultas Ekonomi dan Bisnis"];
+        $jenisPengadaanOptions = ["Tender", "E-Katalog", "Pengadaan Langsung", "Seleksi", "Penunjukan Langsung"];
+        $statusPekerjaanOptions = ["Perencanaan", "Pemilihan", "Pelaksanaan", "Selesai"];
+
+        // ✅ Dummy judul dokumen (kolom D) - dipakai untuk generate list "Tidak Dipersyaratkan" juga
+        $dokumenPengadaanOptions = [
+            "Kerangka Acuan Kerja atau KAK",
+            "Harga Perkiraan Sendiri atau HPS",
+            "Spesifikasi Teknis",
+            "Rancangan Kontrak",
+            "Lembar Data Kualifikasi",
+            "Lembar Data Pemilihan",
+            "Daftar Kuantitas dan Harga",
+            "Jadwal dan Lokasi Pekerjaan",
+            "Gambar Rancangan Pekerjaan",
+            "Dokumen Analisis Mengenai Dampak Lingkungan atau AMDAL",
+            "Dokumen Penawaran",
+            "Surat Penawaran",
+            "Sertifikat atau Lisensi Kemenkumham",
+            "Berita Acara Pemberian Penjelasan",
+            "Berita Acara Pengumuman Negosiasi",
+            "Berita Acara Sanggah dan Sanggah Banding",
+            "Berita Acara Penetapan",
+            "Laporan Hasil Pemilihan Penyedia",
+            "Surat Penunjukan Penyedia Barang Jasa atau SPPBJ",
+            "Surat Perjanjian Kemitraan",
+            "Surat Perjanjian Swakelola",
+            "Surat Penugasan Tim Swakelola",
+            "Nota Kesepahaman atau MoU",
+            "Dokumen Kontrak",
+            "Ringkasan Kontrak",
+            "Surat Jaminan Pelaksanaan",
+            "Surat Jaminan Uang Muka",
+            "Surat Jaminan Pemeliharaan",
+            "Surat Tagihan",
+            "Surat Pesanan Elektronik atau E-Purchasing",
+            "Surat Perintah Mulai Kerja atau SPMK",
+            "Surat Perintah Perjalanan Dinas atau SPPD",
+            "Laporan Pelaksanaan Pekerjaan",
+            "Laporan Penyelesaian Pekerjaan",
+            "Berita Acara Pembayaran atau BAP",
+            "Berita Acara Serah Terima Sementara atau BAST Sementara",
+            "Berita Acara Serah Terima Final atau BAST Final",
+            "Dokumen Pendukung Lainya",
+        ];
+
+        // ✅ Dummy: biar kelihatan "udah keisi" (opsional)
+        $dokumenTidakDipersyaratkanDummy = [
+            "Dokumen Analisis Mengenai Dampak Lingkungan atau AMDAL",
+            "Surat Perintah Perjalanan Dinas atau SPPD",
+        ];
+
+        return view('Unit.TambahPengadaan', compact(
+            'unitName',
+            'tahunOptions',
+            'unitOptions',
+            'jenisPengadaanOptions',
+            'statusPekerjaanOptions',
+            'dokumenPengadaanOptions',
+            'dokumenTidakDipersyaratkanDummy'
+        ));
     }
 
     public function pengadaanStore(Request $request)
@@ -160,6 +282,11 @@ class UnitController extends Controller
         $request->validate([
             'judul' => 'nullable|string|max:255',
             'tahun' => 'nullable|integer',
+
+            // ✅ biar aman kalau form kamu kirim ini juga
+            'dokumen_tidak_dipersyaratkan' => 'nullable|array',
+            'dokumen_tidak_dipersyaratkan.*' => 'nullable|string|max:255',
+            'dokumen_tidak_dipersyaratkan_json' => 'nullable|string',
         ]);
 
         // TODO: simpan ke DB kalau sudah siap
@@ -167,5 +294,54 @@ class UnitController extends Controller
         return redirect()
             ->route('unit.pengadaan.create')
             ->with('success', 'Pengadaan berhasil disimpan (dummy).');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ✅ KELOLA AKUN (UNIT)
+    |--------------------------------------------------------------------------
+    */
+
+    public function kelolaAkun()
+    {
+        // kalau blade butuh nama unit
+        $unitName = "Fakultas Teknik";
+
+        // untuk header sidebar di blade
+        $unitRoleText = 'ADMIN (UNIT)';
+
+        // (opsional) kalau kamu mau kirim variabel tambahan, tapi blade kamu juga sudah bisa ambil auth()->user()
+        return view('Unit.KelolaAkun', compact('unitName', 'unitRoleText'));
+    }
+
+    public function updateAkun(Request $request)
+    {
+        // ✅ validasi aman (dummy dulu)
+        $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+
+            // password opsional (kalau user isi password baru)
+            'current_password' => 'nullable|string|min:8',
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        // ✅ kalau sudah pakai auth & DB:
+        // $user = auth()->user();
+        // $user->name = $request->name;
+        // $user->email = $request->email;
+        //
+        // if ($request->filled('password')) {
+        //   if (!Hash::check($request->current_password, $user->password)) {
+        //     return back()->withErrors(['current_password' => 'Password saat ini salah.'])->withInput();
+        //   }
+        //   $user->password = Hash::make($request->password);
+        // }
+        //
+        // $user->save();
+
+        return redirect()
+            ->route('unit.kelola.akun')
+            ->with('success', 'Akun berhasil diperbarui (dummy).');
     }
 }
